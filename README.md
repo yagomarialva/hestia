@@ -281,3 +281,4 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ---
 
 **🎉 Agora você tem um sistema completo de listas de compras com IA rodando localmente!** # hestia-backend
+# hestia-backend
