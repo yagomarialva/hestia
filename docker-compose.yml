@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Backend - FastAPI
+  backend:
+    build:
+      context: ./Hestia-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://hestia_user:hestia_password@db:5432/hestia_db
+      - SECRET_KEY=your-secret-key-here-change-in-production
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - db
+      - ollama
+    volumes:
+      - ./Hestia-backend:/app
+    networks:
+      - hestia-network
+    restart: unless-stopped
+
+  # Database - PostgreSQL
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=hestia_db
+      - POSTGRES_USER=hestia_user
+      - POSTGRES_PASSWORD=hestia_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hestia-network
+    restart: unless-stopped
+
+  # AI Service - Ollama
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - hestia-network
+    restart: unless-stopped
+
+  # Nginx - Reverse Proxy
+volumes:
+  postgres_data:
+  ollama_data:
+
+networks:
+  hestia-network:
+    driver: bridge 

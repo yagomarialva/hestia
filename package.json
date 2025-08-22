@@ -1,0 +1,58 @@
+{
+  "name": "hestia-fullstack",
+  "version": "1.0.0",
+  "description": "Hestia Shopping List Manager - Full Stack Application",
+  "private": true,
+  "workspaces": [
+    "Hestia-backend",
+    "Hestia-frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd Hestia-backend && docker-compose up",
+    "dev:frontend": "cd Hestia-frontend && npm run dev",
+    "dev:backend:build": "cd Hestia-backend && docker-compose up --build",
+    "dev:frontend:build": "cd Hestia-frontend && npm run build && npm run start",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd Hestia-backend && docker-compose build",
+    "build:frontend": "cd Hestia-frontend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd Hestia-backend && docker-compose up -d",
+    "start:frontend": "cd Hestia-frontend && npm run start",
+    "stop": "cd Hestia-backend && docker-compose down",
+    "clean": "cd Hestia-backend && docker-compose down -v && docker system prune -f",
+    "logs": "cd Hestia-backend && docker-compose logs -f",
+    "install:all": "npm install && cd Hestia-frontend && npm install",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd Hestia-backend && python -m pytest",
+    "test:frontend": "cd Hestia-frontend && npm run test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd Hestia-backend && python -m flake8",
+    "lint:frontend": "cd Hestia-frontend && npm run lint",
+    "format": "npm run format:backend && npm run format:frontend",
+    "format:backend": "cd Hestia-backend && python -m black .",
+    "format:frontend": "cd Hestia-frontend && npm run format"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/hestia.git"
+  },
+  "keywords": [
+    "shopping-list",
+    "ai",
+    "recipe",
+    "fastapi",
+    "react",
+    "nextjs",
+    "typescript"
+  ],
+  "author": "Seu Nome",
+  "license": "MIT"
+} 
