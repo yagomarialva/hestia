@@ -276,7 +276,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 - **Issues**: [GitHub Issues](https://github.com/seu-usuario/hestia/issues)
 - **Documentação**: [Wiki](https://github.com/seu-usuario/hestia/wiki)
-- **Email**: seu-email@exemplo.com
+- **Email**: yago.marialva@gmail.com
 
 ---
 
