@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   # Backend - FastAPI
@@ -49,7 +49,37 @@ services:
       - hestia-network
     restart: unless-stopped
 
+  # Frontend - Next.js
+  frontend:
+    build:
+      context: ./hestia-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - hestia-network
+    restart: unless-stopped
+
   # Nginx - Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - hestia-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   ollama_data:

@@ -1,0 +1,1 @@
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Volumes/320GB/Projects/Hestia/hestia-frontend/app/layout\":[\"static/media/5d258b355fefebcb-s.p.woff2\",\"static/media/b0088cce7ac0b424-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"
