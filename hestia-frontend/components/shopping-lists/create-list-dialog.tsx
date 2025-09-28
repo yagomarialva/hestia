@@ -1,9 +1,10 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -12,9 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 
 interface CreateListDialogProps {
   open: boolean
@@ -38,35 +36,38 @@ export function CreateListDialog({ open, onOpenChange, onCreateList }: CreateLis
       setName("")
       setDescription("")
       setIsLoading(false)
-    }, 500)
+      onOpenChange(false)
+    }, 1000)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="font-heading">Create New Shopping List</DialogTitle>
-          <DialogDescription>Add a new shopping list to organize your items.</DialogDescription>
-        </DialogHeader>
         <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle className="font-heading">Create New List</DialogTitle>
+            <DialogDescription>
+              Create a new shopping list to organize your items.
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">List Name</Label>
               <Input
                 id="name"
-                placeholder="e.g., Weekly Groceries"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Weekly Groceries"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">Description (Optional)</Label>
               <Textarea
                 id="description"
-                placeholder="Brief description of this list..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                placeholder="e.g., Regular weekly shopping items"
                 rows={3}
               />
             </div>
@@ -75,7 +76,7 @@ export function CreateListDialog({ open, onOpenChange, onCreateList }: CreateLis
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || isLoading} className="font-heading">
+            <Button type="submit" disabled={isLoading || !name.trim()} className="font-heading">
               {isLoading ? "Creating..." : "Create List"}
             </Button>
           </DialogFooter>

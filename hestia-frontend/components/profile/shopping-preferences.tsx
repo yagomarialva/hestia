@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -8,67 +8,132 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Save, X } from "lucide-react"
-
-// Mock preferences data
-const mockPreferences = {
-  defaultStore: "whole-foods",
-  autoSort: true,
-  groupByCategory: true,
-  showNutritionInfo: false,
-  enableNotifications: true,
-  dietaryRestrictions: ["vegetarian", "gluten-free"],
-  preferredBrands: ["Organic Valley", "365 Everyday Value", "Whole Foods"],
-}
+import { Save, X, Loader2 } from "lucide-react"
+import { useShoppingPreferences } from "@/hooks/use-profile"
 
 const stores = [
-  { value: "whole-foods", label: "Whole Foods Market" },
-  { value: "kroger", label: "Kroger" },
-  { value: "safeway", label: "Safeway" },
-  { value: "trader-joes", label: "Trader Joe's" },
+  { value: "carrefour", label: "Carrefour" },
   { value: "walmart", label: "Walmart" },
-  { value: "target", label: "Target" },
+  { value: "extra", label: "Extra" },
+  { value: "pao-de-acucar", label: "Pão de Açúcar" },
+  { value: "sams-club", label: "Sam's Club" },
+  { value: "atacadao", label: "Atacadão" },
+  { value: "assai", label: "Assaí" },
+  { value: "big", label: "Big" },
 ]
 
 const dietaryOptions = [
-  { id: "vegetarian", label: "Vegetarian" },
-  { id: "vegan", label: "Vegan" },
-  { id: "gluten-free", label: "Gluten-Free" },
-  { id: "dairy-free", label: "Dairy-Free" },
-  { id: "nut-free", label: "Nut-Free" },
-  { id: "keto", label: "Keto" },
+  { id: "vegetarian", label: "Vegetariano" },
+  { id: "vegan", label: "Vegano" },
+  { id: "gluten-free", label: "Sem Glúten" },
+  { id: "dairy-free", label: "Sem Lactose" },
+  { id: "nut-free", label: "Sem Amendoim" },
+  { id: "keto", label: "Cetogênico" },
   { id: "paleo", label: "Paleo" },
-  { id: "low-sodium", label: "Low Sodium" },
+  { id: "low-sodium", label: "Baixo Sódio" },
 ]
 
 export function ShoppingPreferences() {
-  const [preferences, setPreferences] = useState(mockPreferences)
-  const [isLoading, setIsLoading] = useState(false)
+  const { preferences, loading, error, updatePreferences } = useShoppingPreferences()
+  const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+  const [localPreferences, setLocalPreferences] = useState({
+    default_store: "carrefour",
+    auto_sort: true,
+    group_by_category: true,
+    show_nutrition_info: false,
+    enable_notifications: true,
+    dietary_restrictions: [] as string[],
+    preferred_brands: [] as string[],
+  })
+
+  useEffect(() => {
+    if (preferences) {
+      setLocalPreferences({
+        default_store: preferences.default_store || "carrefour",
+        auto_sort: preferences.auto_sort ?? true,
+        group_by_category: preferences.group_by_category ?? true,
+        show_nutrition_info: preferences.show_nutrition_info ?? false,
+        enable_notifications: preferences.enable_notifications ?? true,
+        dietary_restrictions: preferences.dietary_restrictions || [],
+        preferred_brands: preferences.preferred_brands || [],
+      })
+    }
+  }, [preferences])
 
   const handleSave = async () => {
-    setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
+    if (!preferences) return
+
+    setIsSaving(true)
+    try {
+      await updatePreferences(localPreferences)
       setHasChanges(false)
-    }, 1000)
+    } catch (error) {
+      console.error('Error updating preferences:', error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleReset = () => {
-    setPreferences(mockPreferences)
+    if (preferences) {
+      setLocalPreferences({
+        default_store: preferences.default_store || "carrefour",
+        auto_sort: preferences.auto_sort ?? true,
+        group_by_category: preferences.group_by_category ?? true,
+        show_nutrition_info: preferences.show_nutrition_info ?? false,
+        enable_notifications: preferences.enable_notifications ?? true,
+        dietary_restrictions: preferences.dietary_restrictions || [],
+        preferred_brands: preferences.preferred_brands || [],
+      })
+    }
     setHasChanges(false)
   }
 
   const updatePreference = (key: string, value: any) => {
-    setPreferences({ ...preferences, [key]: value })
+    setLocalPreferences({ ...localPreferences, [key]: value })
     setHasChanges(true)
   }
 
   const toggleDietaryRestriction = (restriction: string) => {
-    const current = preferences.dietaryRestrictions
+    const current = localPreferences.dietary_restrictions
     const updated = current.includes(restriction) ? current.filter((r) => r !== restriction) : [...current, restriction]
-    updatePreference("dietaryRestrictions", updated)
+    updatePreference("dietary_restrictions", updated)
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading">Preferências de Compras</CardTitle>
+            <CardDescription>Personalize sua experiência de compras e organização de listas.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading">Preferências de Compras</CardTitle>
+            <CardDescription>Personalize sua experiência de compras e organização de listas.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center py-8">
+            <p className="text-destructive mb-4">Erro ao carregar preferências: {error}</p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -76,15 +141,15 @@ export function ShoppingPreferences() {
       {/* Shopping Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading">Shopping Settings</CardTitle>
-          <CardDescription>Customize your shopping experience and list organization.</CardDescription>
+          <CardTitle className="font-heading">Configurações de Compras</CardTitle>
+          <CardDescription>Personalize sua experiência de compras e organização de listas.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="default-store">Default Store</Label>
-            <Select value={preferences.defaultStore} onValueChange={(value) => updatePreference("defaultStore", value)}>
+            <Label htmlFor="default-store">Loja Padrão</Label>
+            <Select value={localPreferences.default_store} onValueChange={(value) => updatePreference("default_store", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select your preferred store" />
+                <SelectValue placeholder="Selecione sua loja preferida" />
               </SelectTrigger>
               <SelectContent>
                 {stores.map((store) => (
@@ -99,45 +164,45 @@ export function ShoppingPreferences() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Auto-sort items</Label>
-                <p className="text-sm text-muted-foreground">Automatically organize items by store layout</p>
+                <Label>Auto-organizar itens</Label>
+                <p className="text-sm text-muted-foreground">Organize automaticamente os itens pelo layout da loja</p>
               </div>
               <Switch
-                checked={preferences.autoSort}
-                onCheckedChange={(checked) => updatePreference("autoSort", checked)}
+                checked={localPreferences.auto_sort}
+                onCheckedChange={(checked) => updatePreference("auto_sort", checked)}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Group by category</Label>
-                <p className="text-sm text-muted-foreground">Group similar items together in lists</p>
+                <Label>Agrupar por categoria</Label>
+                <p className="text-sm text-muted-foreground">Agrupe itens similares nas listas</p>
               </div>
               <Switch
-                checked={preferences.groupByCategory}
-                onCheckedChange={(checked) => updatePreference("groupByCategory", checked)}
+                checked={localPreferences.group_by_category}
+                onCheckedChange={(checked) => updatePreference("group_by_category", checked)}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Show nutrition info</Label>
-                <p className="text-sm text-muted-foreground">Display nutritional information when available</p>
+                <Label>Mostrar informações nutricionais</Label>
+                <p className="text-sm text-muted-foreground">Exiba informações nutricionais quando disponíveis</p>
               </div>
               <Switch
-                checked={preferences.showNutritionInfo}
-                onCheckedChange={(checked) => updatePreference("showNutritionInfo", checked)}
+                checked={localPreferences.show_nutrition_info}
+                onCheckedChange={(checked) => updatePreference("show_nutrition_info", checked)}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Enable notifications</Label>
-                <p className="text-sm text-muted-foreground">Get reminders and updates about your lists</p>
+                <Label>Ativar notificações</Label>
+                <p className="text-sm text-muted-foreground">Receba lembretes e atualizações sobre suas listas</p>
               </div>
               <Switch
-                checked={preferences.enableNotifications}
-                onCheckedChange={(checked) => updatePreference("enableNotifications", checked)}
+                checked={localPreferences.enable_notifications}
+                onCheckedChange={(checked) => updatePreference("enable_notifications", checked)}
               />
             </div>
           </div>
@@ -147,8 +212,8 @@ export function ShoppingPreferences() {
       {/* Dietary Restrictions */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading">Dietary Restrictions</CardTitle>
-          <CardDescription>Help us suggest appropriate recipes and ingredients.</CardDescription>
+          <CardTitle className="font-heading">Restrições Alimentares</CardTitle>
+          <CardDescription>Ajude-nos a sugerir receitas e ingredientes apropriados.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -157,7 +222,7 @@ export function ShoppingPreferences() {
                 <div key={option.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={option.id}
-                    checked={preferences.dietaryRestrictions.includes(option.id)}
+                    checked={localPreferences.dietary_restrictions.includes(option.id)}
                     onCheckedChange={() => toggleDietaryRestriction(option.id)}
                   />
                   <Label htmlFor={option.id} className="cursor-pointer">
@@ -167,11 +232,11 @@ export function ShoppingPreferences() {
               ))}
             </div>
 
-            {preferences.dietaryRestrictions.length > 0 && (
+            {localPreferences.dietary_restrictions.length > 0 && (
               <div className="space-y-2">
-                <Label>Selected restrictions:</Label>
+                <Label>Restrições selecionadas:</Label>
                 <div className="flex flex-wrap gap-2">
-                  {preferences.dietaryRestrictions.map((restriction) => (
+                  {localPreferences.dietary_restrictions.map((restriction) => (
                     <Badge key={restriction} variant="secondary">
                       {dietaryOptions.find((opt) => opt.id === restriction)?.label}
                     </Badge>
@@ -186,19 +251,19 @@ export function ShoppingPreferences() {
       {/* Preferred Brands */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading">Preferred Brands</CardTitle>
-          <CardDescription>Your favorite brands for better recipe suggestions.</CardDescription>
+          <CardTitle className="font-heading">Marcas Preferidas</CardTitle>
+          <CardDescription>Suas marcas favoritas para melhores sugestões de receitas.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {preferences.preferredBrands.map((brand, index) => (
+            {localPreferences.preferred_brands.map((brand, index) => (
               <Badge key={index} variant="outline">
                 {brand}
               </Badge>
             ))}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Brand preferences help us suggest better alternatives and deals.
+            As preferências de marca nos ajudam a sugerir melhores alternativas e ofertas.
           </p>
         </CardContent>
       </Card>
@@ -206,19 +271,19 @@ export function ShoppingPreferences() {
       {/* Action Buttons */}
       {hasChanges && (
         <div className="flex items-center space-x-2">
-          <Button onClick={handleSave} disabled={isLoading} className="font-heading">
-            {isLoading ? (
-              "Saving..."
+          <Button onClick={handleSave} disabled={isSaving} className="font-heading">
+            {isSaving ? (
+              "Salvando..."
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Preferences
+                Salvar Preferências
               </>
             )}
           </Button>
           <Button variant="outline" onClick={handleReset}>
             <X className="mr-2 h-4 w-4" />
-            Reset Changes
+            Desfazer Alterações
           </Button>
         </div>
       )}

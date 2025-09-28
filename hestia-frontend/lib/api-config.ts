@@ -12,7 +12,9 @@ export const API_CONFIG = {
     },
     USERS: '/users',
     SHOPPING_LISTS: '/shopping-lists',
-    ITEMS: '/items'
+    ITEMS: '/items',
+    RECIPES: '/recipes',
+    AI: '/ai'
   }
 }
 

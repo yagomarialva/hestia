@@ -1,9 +1,10 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -12,12 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Plus, ShoppingCart } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Plus, Check } from "lucide-react"
 
 interface Ingredient {
   name: string
@@ -43,6 +46,7 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
   const [newListName, setNewListName] = useState("")
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedIngredients, setSelectedIngredients] = useState<Set<number>>(new Set())
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,7 +59,7 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
       console.log("Adding ingredients to list:", {
         listId: selectedListId,
         newListName: newListName,
-        ingredients,
+        ingredients: ingredients.filter((_, index) => selectedIngredients.has(index)),
       })
       setIsLoading(false)
       onOpenChange(false)
@@ -63,111 +67,148 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
       setSelectedListId("")
       setNewListName("")
       setIsCreatingNew(false)
+      setSelectedIngredients(new Set())
     }, 1000)
+  }
+
+  const handleIngredientToggle = (index: number) => {
+    const newSelected = new Set(selectedIngredients)
+    if (newSelected.has(index)) {
+      newSelected.delete(index)
+    } else {
+      newSelected.add(index)
+    }
+    setSelectedIngredients(newSelected)
+  }
+
+  const handleSelectAll = () => {
+    if (selectedIngredients.size === ingredients.length) {
+      setSelectedIngredients(new Set())
+    } else {
+      setSelectedIngredients(new Set(ingredients.map((_, index) => index)))
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="font-heading">Add Ingredients to Shopping List</DialogTitle>
-          <DialogDescription>
-            Choose an existing list or create a new one for your recipe ingredients.
-          </DialogDescription>
-        </DialogHeader>
-
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6 py-4">
-            {/* Ingredients Preview */}
+          <DialogHeader>
+            <DialogTitle className="font-heading">Add Ingredients to Shopping List</DialogTitle>
+            <DialogDescription>
+              Choose which ingredients to add to your shopping list.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* List Selection */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Ingredients to add ({ingredients.length})</Label>
-              <Card>
-                <CardContent className="pt-4">
-                  <div className="flex flex-wrap gap-2">
-                    {ingredients.slice(0, 6).map((ingredient, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {ingredient.name}
-                      </Badge>
-                    ))}
-                    {ingredients.length > 6 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{ingredients.length - 6} more
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <Label>Add to existing list or create new</Label>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  variant={!isCreatingNew ? "default" : "outline"}
+                  onClick={() => setIsCreatingNew(false)}
+                  className="flex-1"
+                >
+                  Existing List
+                </Button>
+                <Button
+                  type="button"
+                  variant={isCreatingNew ? "default" : "outline"}
+                  onClick={() => setIsCreatingNew(true)}
+                  className="flex-1"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  New List
+                </Button>
+              </div>
             </div>
 
-            {/* List Selection */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">Choose destination</Label>
-              <RadioGroup
-                value={isCreatingNew ? "new" : selectedListId}
-                onValueChange={(value) => {
-                  if (value === "new") {
-                    setIsCreatingNew(true)
-                    setSelectedListId("")
-                  } else {
-                    setIsCreatingNew(false)
-                    setSelectedListId(value)
-                  }
-                }}
-              >
-                {/* Existing Lists */}
-                {mockShoppingLists.map((list) => (
-                  <div key={list.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={list.id.toString()} id={`list-${list.id}`} />
-                    <Label htmlFor={`list-${list.id}`} className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{list.name}</span>
-                        <span className="text-sm text-muted-foreground">{list.itemCount} items</span>
-                      </div>
-                    </Label>
+            {!isCreatingNew ? (
+              <div className="space-y-2">
+                <Label htmlFor="list">Select List</Label>
+                <Select value={selectedListId} onValueChange={setSelectedListId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a shopping list" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockShoppingLists.map((list) => (
+                      <SelectItem key={list.id} value={list.id.toString()}>
+                        {list.name} ({list.itemCount} items)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="newList">New List Name</Label>
+                <Input
+                  id="newList"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="e.g., Recipe Ingredients"
+                  required
+                />
+              </div>
+            )}
+
+            {/* Ingredients Selection */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Select Ingredients</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  className="text-xs"
+                >
+                  {selectedIngredients.size === ingredients.length ? "Deselect All" : "Select All"}
+                </Button>
+              </div>
+              <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">
+                {ingredients.map((ingredient, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`ingredient-${index}`}
+                      checked={selectedIngredients.has(index)}
+                      onCheckedChange={() => handleIngredientToggle(index)}
+                    />
+                    <label
+                      htmlFor={`ingredient-${index}`}
+                      className="flex-1 text-sm cursor-pointer"
+                    >
+                      <span className="font-medium">{ingredient.name}</span>
+                      <span className="text-muted-foreground ml-2">
+                        ({ingredient.quantity}) - {ingredient.category}
+                      </span>
+                    </label>
                   </div>
                 ))}
-
-                {/* Create New List */}
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="new" id="new-list" />
-                  <Label htmlFor="new-list" className="flex items-center cursor-pointer">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create new list
-                  </Label>
-                </div>
-              </RadioGroup>
-
-              {/* New List Name Input */}
-              {isCreatingNew && (
-                <div className="ml-6 space-y-2">
-                  <Label htmlFor="new-list-name">List name</Label>
-                  <Input
-                    id="new-list-name"
-                    placeholder="e.g., Recipe Ingredients"
-                    value={newListName}
-                    onChange={(e) => setNewListName(e.target.value)}
-                    required={isCreatingNew}
-                  />
-                </div>
-              )}
+              </div>
             </div>
           </div>
-
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={(!selectedListId && !newListName.trim()) || isLoading}
+              disabled={
+                isLoading ||
+                (!isCreatingNew && !selectedListId) ||
+                (isCreatingNew && !newListName.trim()) ||
+                selectedIngredients.size === 0
+              }
               className="font-heading"
             >
               {isLoading ? (
                 "Adding..."
               ) : (
                 <>
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Add Ingredients
+                  <Check className="mr-2 h-4 w-4" />
+                  Add {selectedIngredients.size} Ingredients
                 </>
               )}
             </Button>

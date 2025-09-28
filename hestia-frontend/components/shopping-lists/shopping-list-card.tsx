@@ -1,8 +1,7 @@
-"use client"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CheckCircle2, Calendar, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
+import { MoreHorizontal, Eye, Edit, Trash2, CheckCircle2, Calendar } from "lucide-react"
 
 interface ShoppingListCardProps {
   list: {

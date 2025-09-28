@@ -1,9 +1,9 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
@@ -12,29 +12,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const categories = [
-  "Produce",
-  "Dairy",
-  "Meat",
-  "Bakery",
-  "Pantry",
-  "Frozen",
-  "Beverages",
-  "Snacks",
-  "Personal Care",
-  "Household",
-  "Other",
-]
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface AddItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onAddItem: (name: string, category: string, quantity: string) => void
 }
+
+const categories = [
+  "Produce",
+  "Dairy",
+  "Meat",
+  "Pantry",
+  "Bakery",
+  "Frozen",
+  "Beverages",
+  "Snacks",
+  "Health & Beauty",
+  "Household",
+  "Other",
+]
 
 export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogProps) {
   const [name, setName] = useState("")
@@ -49,30 +53,33 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
     setIsLoading(true)
     // Simulate API call
     setTimeout(() => {
-      onAddItem(name.trim(), category, quantity.trim() || "1")
+      onAddItem(name.trim(), category, quantity.trim())
       setName("")
       setCategory("")
       setQuantity("")
       setIsLoading(false)
-    }, 300)
+      onOpenChange(false)
+    }, 500)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="font-heading">Add New Item</DialogTitle>
-          <DialogDescription>Add a new item to your shopping list.</DialogDescription>
-        </DialogHeader>
         <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle className="font-heading">Add New Item</DialogTitle>
+            <DialogDescription>
+              Add a new item to your shopping list.
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="item-name">Item Name</Label>
+              <Label htmlFor="name">Item Name</Label>
               <Input
-                id="item-name"
-                placeholder="e.g., Organic Bananas"
+                id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Organic Bananas"
                 required
               />
             </div>
@@ -92,12 +99,12 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity (optional)</Label>
+              <Label htmlFor="quantity">Quantity (Optional)</Label>
               <Input
                 id="quantity"
-                placeholder="e.g., 2 lbs, 1 container"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                placeholder="e.g., 2 lbs, 1 container"
               />
             </div>
           </div>
@@ -105,7 +112,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || !category || isLoading} className="font-heading">
+            <Button type="submit" disabled={isLoading || !name.trim() || !category} className="font-heading">
               {isLoading ? "Adding..." : "Add Item"}
             </Button>
           </DialogFooter>

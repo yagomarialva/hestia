@@ -37,9 +37,9 @@ export function RecipeGenerator() {
   const [recipeText, setRecipeText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [extractedData, setExtractedData] = useState<any>(null)
-  const [isAddToListDialogOpen, setIsAddToListDialogOpen] = useState(false)
+  const [isAddToListOpen, setIsAddToListOpen] = useState(false)
 
-  const handleExtractIngredients = async () => {
+  const handleExtract = async () => {
     if (!recipeText.trim()) return
 
     setIsProcessing(true)
@@ -53,132 +53,90 @@ export function RecipeGenerator() {
     }
   }
 
-  const handleClearAll = () => {
-    setRecipeText("")
-    setExtractedData(null)
+  const handleAddToList = () => {
+    if (extractedData?.ingredients) {
+      setIsAddToListOpen(true)
+    }
   }
-
-  const sampleRecipes = [
-    {
-      title: "Classic Spaghetti Carbonara",
-      preview: "A traditional Italian pasta dish with eggs, cheese, and pancetta...",
-    },
-    {
-      title: "Chicken Tikka Masala",
-      preview: "Tender chicken in a creamy, spiced tomato sauce...",
-    },
-    {
-      title: "Chocolate Chip Cookies",
-      preview: "Soft and chewy homemade cookies with chocolate chips...",
-    },
-  ]
 
   return (
     <div className="space-y-6">
-      {/* Recipe Input */}
+      {/* Input Section */}
       <Card>
         <CardHeader>
           <CardTitle className="font-heading flex items-center">
             <ChefHat className="mr-2 h-5 w-5 text-primary" />
-            Recipe Input
+            Recipe to Shopping List
           </CardTitle>
-          <CardDescription>Paste your recipe text below and let AI extract the ingredients for you.</CardDescription>
+          <CardDescription>
+            Paste your recipe text and let AI extract the ingredients for your shopping list.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea
-            placeholder="Paste your recipe here... Include the title, ingredients list, and instructions for best results."
-            value={recipeText}
-            onChange={(e) => setRecipeText(e.target.value)}
-            rows={8}
-            className="resize-none"
-          />
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              {recipeText.length > 0 && `${recipeText.length} characters`}
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" onClick={handleClearAll} disabled={!recipeText && !extractedData}>
-                Clear All
-              </Button>
-              <Button
-                onClick={handleExtractIngredients}
-                disabled={!recipeText.trim() || isProcessing}
-                className="font-heading"
-              >
-                {isProcessing ? (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Extract Ingredients
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="space-y-2">
+            <label htmlFor="recipe" className="text-sm font-medium">
+              Recipe Text
+            </label>
+            <Textarea
+              id="recipe"
+              placeholder="Paste your recipe here... (e.g., 'Creamy Chicken Alfredo Pasta: 1 lb chicken breast, 12 oz fettuccine pasta, 1 cup heavy cream...')"
+              value={recipeText}
+              onChange={(e) => setRecipeText(e.target.value)}
+              rows={6}
+              className="resize-none"
+            />
           </div>
+          <Button
+            onClick={handleExtract}
+            disabled={!recipeText.trim() || isProcessing}
+            className="w-full font-heading"
+          >
+            {isProcessing ? (
+              <>
+                <Sparkles className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Extract Ingredients
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Sample Recipes */}
-      {!extractedData && (
+      {/* Results Section */}
+      {extractedData && (
         <Card>
           <CardHeader>
-            <CardTitle className="font-heading">Try a Sample Recipe</CardTitle>
-            <CardDescription>Click on any sample recipe to see how the AI extraction works.</CardDescription>
+            <div className="flex items-center justify-between">
+              <CardTitle className="font-heading">{extractedData.title}</CardTitle>
+              <Button onClick={handleAddToList} className="font-heading">
+                Add to Shopping List
+              </Button>
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+              <div className="flex items-center">
+                <Users className="mr-1 h-4 w-4" />
+                {extractedData.servings} servings
+              </div>
+              <div className="flex items-center">
+                <Clock className="mr-1 h-4 w-4" />
+                {extractedData.cookTime}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 md:grid-cols-3">
-              {sampleRecipes.map((recipe, index) => (
-                <div
-                  key={index}
-                  className="p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                  onClick={() => {
-                    setRecipeText(`${recipe.title}\n\n${recipe.preview}`)
-                  }}
-                >
-                  <h4 className="font-heading font-semibold mb-1">{recipe.title}</h4>
-                  <p className="text-sm text-muted-foreground">{recipe.preview}</p>
-                </div>
-              ))}
-            </div>
+            <ExtractedIngredients ingredients={extractedData.ingredients} />
           </CardContent>
         </Card>
       )}
 
-      {/* Extracted Results */}
-      {extractedData && (
-        <div className="space-y-6">
-          {/* Recipe Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-heading">{extractedData.title}</CardTitle>
-              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                <div className="flex items-center">
-                  <Users className="mr-1 h-4 w-4" />
-                  {extractedData.servings} servings
-                </div>
-                <div className="flex items-center">
-                  <Clock className="mr-1 h-4 w-4" />
-                  {extractedData.cookTime}
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Extracted Ingredients */}
-          <ExtractedIngredients
-            ingredients={extractedData.ingredients}
-            onAddToList={() => setIsAddToListDialogOpen(true)}
-          />
-        </div>
-      )}
-
+      {/* Add to List Dialog */}
       <AddToListDialog
-        open={isAddToListDialogOpen}
-        onOpenChange={setIsAddToListDialogOpen}
+        open={isAddToListOpen}
+        onOpenChange={setIsAddToListOpen}
         ingredients={extractedData?.ingredients || []}
       />
     </div>

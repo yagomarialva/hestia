@@ -84,9 +84,9 @@ export function ShoppingListsManager() {
   return (
     <div className="space-y-6">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center space-x-2">
-          <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex-1 max-w-md">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search lists..."
@@ -95,55 +95,38 @@ export function ShoppingListsManager() {
               className="pl-10"
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={filterStatus === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus("all")}
-            >
-              All
-            </Button>
-            <Button
-              variant={filterStatus === "active" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus("active")}
-            >
-              Active
-            </Button>
-            <Button
-              variant={filterStatus === "completed" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus("completed")}
-            >
-              Completed
-            </Button>
-          </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
-          <Plus className="mr-2 h-4 w-4" />
-          New List
-        </Button>
+        <div className="flex gap-2">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as "all" | "active" | "completed")}
+            className="px-3 py-2 border border-border rounded-md bg-background text-sm"
+          >
+            <option value="all">All Lists</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
+            <Plus className="mr-2 h-4 w-4" />
+            New List
+          </Button>
+        </div>
       </div>
 
       {/* Lists Grid */}
       {filteredLists.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Plus className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-heading font-semibold mb-2">No lists found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchQuery ? "Try adjusting your search terms." : "Create your first shopping list to get started."}
-            </p>
-            {!searchQuery && (
-              <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
-                <Plus className="mr-2 h-4 w-4" />
-                Create List
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <div className="text-center py-12">
+          <h3 className="text-lg font-heading font-semibold mb-2">No lists found</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchQuery ? "Try adjusting your search terms." : "Create your first shopping list to get started."}
+          </p>
+          {!searchQuery && (
+            <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
+              <Plus className="mr-2 h-4 w-4" />
+              Create List
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredLists.map((list) => (
@@ -152,6 +135,7 @@ export function ShoppingListsManager() {
         </div>
       )}
 
+      {/* Create List Dialog */}
       <CreateListDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}

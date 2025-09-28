@@ -98,56 +98,78 @@ export function ShoppingListDetail({ listId }: ShoppingListDetailProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/lists">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Lists
-          </Link>
-        </Button>
-      </div>
-
-      {/* List Info */}
-      <div className="space-y-4">
-        <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/lists">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Lists
+            </Link>
+          </Button>
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground mb-2">{list.name}</h1>
+            <h1 className="text-3xl font-heading font-bold">{list.name}</h1>
             <p className="text-muted-foreground">{list.description}</p>
           </div>
-          <Badge variant={list.status === "completed" ? "default" : "secondary"}>{list.status === "completed" ? "Completed" : "Active"}</Badge>
         </div>
-
-        {/* Progress */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Progress</span>
-                <span className="text-muted-foreground">
-                  {completedItems.length}/{list.items.length} items completed
-                </span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-3">
-                <div
-                  className="bg-primary rounded-full h-3 transition-all duration-300"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center space-x-2">
+          <Badge variant={list.status === "completed" ? "default" : "secondary"}>{list.status}</Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <MoreHorizontal className="mr-2 h-4 w-4" />
+                Actions
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit List
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete List
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search items..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      {/* Progress */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center text-muted-foreground">
+                <Check className="mr-1 h-3 w-3" />
+                Progress
+              </span>
+              <span className="font-medium">
+                {completedItems.length}/{list.items.length} items completed
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary rounded-full h-2 transition-all duration-300"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search and Add */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search items..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
         <Button onClick={() => setIsAddItemDialogOpen(true)} className="font-heading">
           <Plus className="mr-2 h-4 w-4" />
@@ -155,136 +177,107 @@ export function ShoppingListDetail({ listId }: ShoppingListDetailProps) {
         </Button>
       </div>
 
-      {/* Items */}
-      <div className="space-y-6">
+      {/* Items List */}
+      <div className="space-y-4">
         {/* Pending Items */}
         {pendingItems.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-heading">To Buy ({pendingItems.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          <div className="space-y-2">
+            <h3 className="text-lg font-heading font-semibold">Pending Items</h3>
+            <div className="space-y-2">
               {pendingItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                >
-                  <Checkbox checked={item.completed} onCheckedChange={() => handleToggleItem(item.id)} />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{item.name}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Item
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDeleteItem(item.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Item
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                <Card key={item.id} className="hover:shadow-sm transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        checked={item.completed}
+                        onCheckedChange={() => handleToggleItem(item.id)}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-sm text-muted-foreground">{item.quantity}</span>
+                        </div>
+                        <Badge variant="outline" className="mt-1">
+                          {item.category}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Badge variant="outline" className="text-xs">
-                        {item.category}
-                      </Badge>
-                      <span>{item.quantity}</span>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
-  
+
         {/* Completed Items */}
         {completedItems.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-heading flex items-center">
-                <Check className="mr-2 h-5 w-5 text-primary" />
-                Completed ({completedItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          <div className="space-y-2">
+            <h3 className="text-lg font-heading font-semibold text-muted-foreground">Completed Items</h3>
+            <div className="space-y-2">
               {completedItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-border bg-muted/30"
-                >
-                  <Checkbox checked={item.completed} onCheckedChange={() => handleToggleItem(item.id)} />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium line-through text-muted-foreground">{item.name}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Item
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDeleteItem(item.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Item
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                <Card key={item.id} className="opacity-60 hover:shadow-sm transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        checked={item.completed}
+                        onCheckedChange={() => handleToggleItem(item.id)}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium line-through">{item.name}</span>
+                          <span className="text-sm text-muted-foreground">{item.quantity}</span>
+                        </div>
+                        <Badge variant="outline" className="mt-1">
+                          {item.category}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Badge variant="outline" className="text-xs">
-                        {item.category}
-                      </Badge>
-                      <span>{item.quantity}</span>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Empty State */}
         {filteredItems.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                <Plus className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-heading font-semibold mb-2">No items found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery ? "Try adjusting your search terms." : "Add your first item to get started."}
-              </p>
-              {!searchQuery && (
-                <Button onClick={() => setIsAddItemDialogOpen(true)} className="font-heading">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Item
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <div className="text-center py-12">
+            <h3 className="text-lg font-heading font-semibold mb-2">No items found</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery ? "Try adjusting your search terms." : "Add your first item to get started."}
+            </p>
+            {!searchQuery && (
+              <Button onClick={() => setIsAddItemDialogOpen(true)} className="font-heading">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Item
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
-      <AddItemDialog open={isAddItemDialogOpen} onOpenChange={setIsAddItemDialogOpen} onAddItem={handleAddItem} />
+      {/* Add Item Dialog */}
+      <AddItemDialog
+        open={isAddItemDialogOpen}
+        onOpenChange={setIsAddItemDialogOpen}
+        onAddItem={handleAddItem}
+      />
     </div>
   )
 }
