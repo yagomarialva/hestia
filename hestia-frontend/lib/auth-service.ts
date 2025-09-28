@@ -1,4 +1,5 @@
 import { buildApiUrl, API_CONFIG } from './api-config'
+import { apiInterceptor } from './api-interceptor'
 
 export interface RegisterData {
   name: string
@@ -74,18 +75,9 @@ class AuthService {
 
   async getCurrentUser(token: string): Promise<User> {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ME), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ME), {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to get user data')
-      }
 
       return await response.json()
     } catch (error) {

@@ -20,7 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Check } from "lucide-react"
+import { Plus, Check, Loader2 } from "lucide-react"
+import { useShoppingListsContext } from "@/lib/shopping-lists-context"
+import { useToast } from "@/hooks/use-toast"
 
 interface Ingredient {
   name: string
@@ -34,14 +36,9 @@ interface AddToListDialogProps {
   ingredients: Ingredient[]
 }
 
-// Mock shopping lists - replace with real data
-const mockShoppingLists = [
-  { id: 1, name: "Weekly Groceries", itemCount: 12 },
-  { id: 2, name: "Breakfast Essentials", itemCount: 6 },
-  { id: 3, name: "Dinner Party", itemCount: 15 },
-]
-
 export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDialogProps) {
+  const { lists, createList, addItem } = useShoppingListsContext()
+  const { toast } = useToast()
   const [selectedListId, setSelectedListId] = useState<string>("")
   const [newListName, setNewListName] = useState("")
   const [isCreatingNew, setIsCreatingNew] = useState(false)
@@ -53,22 +50,51 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
     if (!selectedListId && !newListName.trim()) return
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      // Here you would add ingredients to the selected or new list
-      console.log("Adding ingredients to list:", {
-        listId: selectedListId,
-        newListName: newListName,
-        ingredients: ingredients.filter((_, index) => selectedIngredients.has(index)),
+    try {
+      let targetListId = selectedListId
+
+      // Create new list if needed
+      if (isCreatingNew && newListName.trim()) {
+        const newList = await createList({
+          name: newListName.trim(),
+          description: `Lista criada a partir de receita`
+        })
+        targetListId = newList.id.toString()
+      }
+
+      // Add selected ingredients to the list
+      const selectedIngredientData = Array.from(selectedIngredients).map((index) => ingredients[index])
+      
+      // Add each ingredient to the list
+      for (const ingredient of selectedIngredientData) {
+        await addItem(parseInt(targetListId), {
+          name: ingredient.name,
+          category: ingredient.category,
+          quantity: ingredient.quantity || undefined
+        })
+      }
+
+      toast({
+        title: "Ingredientes adicionados!",
+        description: `${selectedIngredientData.length} ingredientes foram adicionados à lista.`,
       })
-      setIsLoading(false)
-      onOpenChange(false)
+
       // Reset form
       setSelectedListId("")
       setNewListName("")
       setIsCreatingNew(false)
       setSelectedIngredients(new Set())
-    }, 1000)
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error adding ingredients to list:", error)
+      toast({
+        title: "Erro ao adicionar ingredientes",
+        description: "Não foi possível adicionar os ingredientes à lista. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleIngredientToggle = (index: number) => {
@@ -94,15 +120,15 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-heading">Add Ingredients to Shopping List</DialogTitle>
+            <DialogTitle className="font-heading">Adicionar Ingredientes à Lista de Compras</DialogTitle>
             <DialogDescription>
-              Choose which ingredients to add to your shopping list.
+              Escolha quais ingredientes adicionar à sua lista de compras.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {/* List Selection */}
             <div className="space-y-2">
-              <Label>Add to existing list or create new</Label>
+              <Label>Adicionar à lista existente ou criar nova</Label>
               <div className="flex space-x-2">
                 <Button
                   type="button"
@@ -110,7 +136,7 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
                   onClick={() => setIsCreatingNew(false)}
                   className="flex-1"
                 >
-                  Existing List
+                  Lista Existente
                 </Button>
                 <Button
                   type="button"
@@ -119,22 +145,22 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
                   className="flex-1"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  New List
+                  Nova Lista
                 </Button>
               </div>
             </div>
 
             {!isCreatingNew ? (
               <div className="space-y-2">
-                <Label htmlFor="list">Select List</Label>
+                <Label htmlFor="list">Selecionar Lista</Label>
                 <Select value={selectedListId} onValueChange={setSelectedListId} required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a shopping list" />
+                    <SelectValue placeholder="Escolher uma lista de compras" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockShoppingLists.map((list) => (
+                    {lists.map((list) => (
                       <SelectItem key={list.id} value={list.id.toString()}>
-                        {list.name} ({list.itemCount} items)
+                        {list.name} ({list.items?.length || 0} itens)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -142,12 +168,12 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
               </div>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="newList">New List Name</Label>
+                <Label htmlFor="newList">Nome da Nova Lista</Label>
                 <Input
                   id="newList"
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
-                  placeholder="e.g., Recipe Ingredients"
+                  placeholder="ex: Ingredientes da Receita"
                   required
                 />
               </div>
@@ -156,7 +182,7 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
             {/* Ingredients Selection */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Select Ingredients</Label>
+                <Label>Selecionar Ingredientes</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -164,7 +190,7 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
                   onClick={handleSelectAll}
                   className="text-xs"
                 >
-                  {selectedIngredients.size === ingredients.length ? "Deselect All" : "Select All"}
+                  {selectedIngredients.size === ingredients.length ? "Desmarcar Todos" : "Marcar Todos"}
                 </Button>
               </div>
               <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">
@@ -191,7 +217,7 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button
               type="submit"
@@ -204,11 +230,14 @@ export function AddToListDialog({ open, onOpenChange, ingredients }: AddToListDi
               className="font-heading"
             >
               {isLoading ? (
-                "Adding..."
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adicionando...
+                </>
               ) : (
                 <>
                   <Check className="mr-2 h-4 w-4" />
-                  Add {selectedIngredients.size} Ingredients
+                  Adicionar {selectedIngredients.size} Ingredientes
                 </>
               )}
             </Button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,86 +14,93 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowLeft, Plus, Search, MoreHorizontal, Edit, Trash2, Check } from "lucide-react"
+import { ArrowLeft, Plus, Search, MoreHorizontal, Edit, Trash2, Check, Loader2 } from "lucide-react"
 import { AddItemDialog } from "./add-item-dialog"
-
-// Mock data - replace with real data fetching
-const mockListData = {
-  1: {
-    id: 1,
-    name: "Weekly Groceries",
-    description: "Regular weekly shopping items",
-    status: "active" as "active" | "completed",
-    items: [
-      { id: 1, name: "Organicc Bananas", category: "Produce", completed: true, quantity: "2 lbs" },
-      { id: 2, name: "Greek Yogurt", category: "Dairy", completed: true, quantity: "1 container" },
-      { id: 3, name: "Whole Wheat Bread", category: "Bakery", completed: false, quantity: "1 loaf" },
-      { id: 4, name: "Chicken Breast", category: "Meat", completed: false, quantity: "2 lbs" },
-      { id: 5, name: "Fresh Spinach", category: "Produce", completed: false, quantity: "1 bag" },
-      { id: 6, name: "Olive Oil", category: "Pantry", completed: true, quantity: "1 bottle" },
-    ],
-  },
-}
+import { useShoppingListsContext } from "@/lib/shopping-lists-context"
 
 interface ShoppingListDetailProps {
   listId: number
 }
 
 export function ShoppingListDetail({ listId }: ShoppingListDetailProps) {
-  const [list, setList] = useState(mockListData[listId as keyof typeof mockListData])
+  const { lists, addItem, updateItem, deleteItem, toggleItemCompletion, loading, error } = useShoppingListsContext()
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false)
+  
+  const list = lists.find(l => l.id === listId)
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-destructive mb-4">Erro ao carregar lista: {error}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Tentar Novamente
+        </Button>
+      </div>
+    )
+  }
 
   if (!list) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-heading font-bold mb-2">List not found</h2>
-        <p className="text-muted-foreground mb-4">The shopping list you're looking for doesn't exist.</p>
+        <h2 className="text-2xl font-heading font-bold mb-2">Lista não encontrada</h2>
+        <p className="text-muted-foreground mb-4">A lista de compras que você está procurando não existe.</p>
         <Button asChild>
           <Link href="/dashboard/lists">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Lists
+            Voltar às Listas
           </Link>
         </Button>
       </div>
     )
   }
 
-  const filteredItems = list.items.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredItems = (list.items || []).filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
   const completedItems = filteredItems.filter((item) => item.completed)
   const pendingItems = filteredItems.filter((item) => !item.completed)
 
-  const handleToggleItem = (itemId: number) => {
-    setList({
-      ...list,
-      items: list.items.map((item) => (item.id === itemId ? { ...item, completed: !item.completed } : item)),
-    })
-  }
-
-  const handleDeleteItem = (itemId: number) => {
-    setList({
-      ...list,
-      items: list.items.filter((item) => item.id !== itemId),
-    })
-  }
-
-  const handleAddItem = (name: string, category: string, quantity: string) => {
-    const newItem = {
-      id: Date.now(),
-      name,
-      category,
-      quantity,
-      completed: false,
+  const handleToggleItem = async (itemId: number) => {
+    try {
+      const item = list.items?.find(i => i.id === itemId)
+      if (item) {
+        await toggleItemCompletion(listId, itemId, !item.completed)
+      }
+    } catch (error) {
+      console.error('Error toggling item:', error)
     }
-    setList({
-      ...list,
-      items: [...list.items, newItem],
-    })
-    setIsAddItemDialogOpen(false)
   }
 
-  const progressPercentage = list.items.length > 0 ? (completedItems.length / list.items.length) * 100 : 0
+  const handleDeleteItem = async (itemId: number) => {
+    try {
+      await deleteItem(listId, itemId)
+    } catch (error) {
+      console.error('Error deleting item:', error)
+    }
+  }
+
+  const handleAddItem = async (name: string, category: string, quantity: string) => {
+    try {
+      await addItem(listId, {
+        name,
+        category,
+        quantity: quantity || undefined
+      })
+      setIsAddItemDialogOpen(false)
+    } catch (error) {
+      console.error('Error adding item:', error)
+    }
+  }
+
+  const progressPercentage = (list.items?.length || 0) > 0 ? (completedItems.length / (list.items?.length || 1)) * 100 : 0
 
   return (
     <div className="space-y-6">
@@ -112,7 +119,9 @@ export function ShoppingListDetail({ listId }: ShoppingListDetailProps) {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Badge variant={list.status === "completed" ? "default" : "secondary"}>{list.status}</Badge>
+          <Badge variant={completedItems.length === (list.items?.length || 0) && (list.items?.length || 0) > 0 ? "default" : "secondary"}>
+            {completedItems.length === (list.items?.length || 0) && (list.items?.length || 0) > 0 ? "concluída" : "ativa"}
+          </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -144,9 +153,9 @@ export function ShoppingListDetail({ listId }: ShoppingListDetailProps) {
                 <Check className="mr-1 h-3 w-3" />
                 Progress
               </span>
-              <span className="font-medium">
-                {completedItems.length}/{list.items.length} items completed
-              </span>
+            <span className="font-medium">
+              {completedItems.length}/{list.items?.length || 0} itens concluídos
+            </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
               <div

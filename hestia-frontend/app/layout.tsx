@@ -3,6 +3,7 @@ import { Work_Sans, Open_Sans } from "next/font/google"
 import "./globals.css"
 import { I18nProvider } from "@/lib/i18n/context"
 import { AuthProvider } from "@/lib/auth-context"
+import { ShoppingListsProvider } from "@/lib/shopping-lists-context"
 
 const workSans = Work_Sans({
   subsets: ["latin"],
@@ -34,7 +35,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans text-foreground">
         <I18nProvider>
           <AuthProvider>
-            {children}
+            <ShoppingListsProvider>
+              {children}
+            </ShoppingListsProvider>
           </AuthProvider>
         </I18nProvider>
       </body>

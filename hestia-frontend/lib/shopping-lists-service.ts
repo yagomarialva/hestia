@@ -1,4 +1,5 @@
 import { buildApiUrl, API_CONFIG } from './api-config'
+import { apiInterceptor } from './api-interceptor'
 
 export interface ShoppingList {
   id: number
@@ -53,15 +54,9 @@ class ShoppingListsService {
   // Shopping Lists CRUD
   async getShoppingLists(): Promise<ShoppingList[]> {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SHOPPING_LISTS), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(API_CONFIG.ENDPOINTS.SHOPPING_LISTS), {
         method: 'GET',
-        headers: await this.getAuthHeaders(),
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to fetch shopping lists')
-      }
 
       return await response.json()
     } catch (error) {
@@ -72,15 +67,9 @@ class ShoppingListsService {
 
   async getShoppingList(id: number): Promise<ShoppingList> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${id}`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${id}`), {
         method: 'GET',
-        headers: await this.getAuthHeaders(),
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to fetch shopping list')
-      }
 
       return await response.json()
     } catch (error) {
@@ -91,16 +80,10 @@ class ShoppingListsService {
 
   async createShoppingList(data: CreateShoppingListData): Promise<ShoppingList> {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SHOPPING_LISTS), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(API_CONFIG.ENDPOINTS.SHOPPING_LISTS), {
         method: 'POST',
-        headers: await this.getAuthHeaders(),
         body: JSON.stringify(data),
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to create shopping list')
-      }
 
       return await response.json()
     } catch (error) {
@@ -111,16 +94,11 @@ class ShoppingListsService {
 
   async updateShoppingList(id: number, data: Partial<CreateShoppingListData>): Promise<ShoppingList> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${id}`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${id}`), {
         method: 'PUT',
-        headers: await this.getAuthHeaders(),
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to update shopping list')
-      }
 
       return await response.json()
     } catch (error) {
@@ -131,15 +109,10 @@ class ShoppingListsService {
 
   async deleteShoppingList(id: number): Promise<void> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${id}`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${id}`), {
         method: 'DELETE',
-        headers: await this.getAuthHeaders(),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to delete shopping list')
-      }
     } catch (error) {
       console.error('Delete shopping list error:', error)
       throw error
@@ -149,15 +122,10 @@ class ShoppingListsService {
   // Items CRUD
   async getItems(listId: number): Promise<ShoppingListItem[]> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items`), {
         method: 'GET',
-        headers: await this.getAuthHeaders(),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to fetch items')
-      }
 
       return await response.json()
     } catch (error) {
@@ -168,16 +136,11 @@ class ShoppingListsService {
 
   async createItem(listId: number, data: CreateItemData): Promise<ShoppingListItem> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items`), {
         method: 'POST',
-        headers: await this.getAuthHeaders(),
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to create item')
-      }
 
       return await response.json()
     } catch (error) {
@@ -188,16 +151,11 @@ class ShoppingListsService {
 
   async updateItem(listId: number, itemId: number, data: UpdateItemData): Promise<ShoppingListItem> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items/${itemId}`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items/${itemId}`), {
         method: 'PUT',
-        headers: await this.getAuthHeaders(),
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to update item')
-      }
 
       return await response.json()
     } catch (error) {
@@ -208,15 +166,10 @@ class ShoppingListsService {
 
   async deleteItem(listId: number, itemId: number): Promise<void> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items/${itemId}`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}/items/${itemId}`), {
         method: 'DELETE',
-        headers: await this.getAuthHeaders(),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to delete item')
-      }
     } catch (error) {
       console.error('Delete item error:', error)
       throw error

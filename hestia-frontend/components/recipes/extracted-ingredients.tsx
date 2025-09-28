@@ -62,19 +62,19 @@ export function ExtractedIngredients({ ingredients, onAddToList }: ExtractedIngr
           <div>
             <CardTitle className="font-heading flex items-center">
               <Check className="mr-2 h-5 w-5 text-primary" />
-              Extracted Ingredients
+              Ingredientes Extraídos
             </CardTitle>
             <CardDescription>
-              AI has identified {ingredients.length} ingredients. Select which ones to add to your shopping list.
+              A IA identificou {ingredients.length} ingredientes. Selecione quais adicionar à sua lista de compras.
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm" onClick={handleSelectAll}>
-              {selectedIngredients.size === ingredients.length ? "Deselect All" : "Select All"}
+              {selectedIngredients.size === ingredients.length ? "Desmarcar Todos" : "Marcar Todos"}
             </Button>
             <Button onClick={onAddToList} disabled={selectedCount === 0} className="font-heading">
               <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to List ({selectedCount})
+              Adicionar à Lista ({selectedCount})
             </Button>
           </div>
         </div>

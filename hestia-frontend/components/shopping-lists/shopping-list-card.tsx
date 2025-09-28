@@ -15,7 +15,7 @@ interface ShoppingListCardProps {
   list: {
     id: number
     name: string
-    description: string
+    description?: string
     itemCount: number
     completedCount: number
     lastUpdated: string
@@ -33,7 +33,9 @@ export function ShoppingListCard({ list, onDelete }: ShoppingListCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg font-heading line-clamp-1">{list.name}</CardTitle>
-            <CardDescription className="line-clamp-2">{list.description}</CardDescription>
+            {list.description && (
+              <CardDescription className="line-clamp-2">{list.description}</CardDescription>
+            )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

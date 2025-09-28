@@ -1,4 +1,4 @@
-// File: /Volumes/320GB/Projects/Hestia/hestia-frontend/app/dashboard/lists/page.tsx
+// File: /Users/yagomarialva/Projects/Hestia/hestia-frontend/app/dashboard/lists/page.tsx
 import * as entry from '../../../../../app/dashboard/lists/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

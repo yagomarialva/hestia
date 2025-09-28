@@ -4,52 +4,53 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { ChefHat, Sparkles, Clock, Users } from "lucide-react"
+import { ChefHat, Sparkles, Clock, Users, Loader2 } from "lucide-react"
 import { ExtractedIngredients } from "./extracted-ingredients"
 import { AddToListDialog } from "./add-to-list-dialog"
-
-// Mock AI function - replace with real AI integration
-const extractIngredientsFromRecipe = async (recipeText: string) => {
-  // Simulate AI processing delay
-  await new Promise((resolve) => setTimeout(resolve, 2000))
-
-  // Mock extracted data - replace with real AI extraction
-  return {
-    title: "Creamy Chicken Alfredo Pasta",
-    servings: 4,
-    cookTime: "30 minutes",
-    ingredients: [
-      { name: "Chicken Breast", quantity: "1 lb", category: "Meat" },
-      { name: "Fettuccine Pasta", quantity: "12 oz", category: "Pantry" },
-      { name: "Heavy Cream", quantity: "1 cup", category: "Dairy" },
-      { name: "Parmesan Cheese", quantity: "1 cup grated", category: "Dairy" },
-      { name: "Garlic", quantity: "3 cloves", category: "Produce" },
-      { name: "Butter", quantity: "2 tbsp", category: "Dairy" },
-      { name: "Olive Oil", quantity: "2 tbsp", category: "Pantry" },
-      { name: "Salt", quantity: "to taste", category: "Pantry" },
-      { name: "Black Pepper", quantity: "to taste", category: "Pantry" },
-      { name: "Fresh Parsley", quantity: "2 tbsp chopped", category: "Produce" },
-    ],
-  }
-}
+import { useAI } from "@/hooks/use-ai"
+import { useToast } from "@/hooks/use-toast"
 
 export function RecipeGenerator() {
   const [recipeText, setRecipeText] = useState("")
-  const [isProcessing, setIsProcessing] = useState(false)
   const [extractedData, setExtractedData] = useState<any>(null)
   const [isAddToListOpen, setIsAddToListOpen] = useState(false)
+  const [peopleCount, setPeopleCount] = useState(1)
+  const [difficulty, setDifficulty] = useState<'fácil' | 'normal' | 'difícil'>('normal')
+
+  const { generateRecipeIngredients, isLoading, error } = useAI()
+  const { toast } = useToast()
 
   const handleExtract = async () => {
     if (!recipeText.trim()) return
 
-    setIsProcessing(true)
     try {
-      const result = await extractIngredientsFromRecipe(recipeText)
-      setExtractedData(result)
-    } catch (error) {
-      console.error("Error extracting ingredients:", error)
-    } finally {
-      setIsProcessing(false)
+      const result = await generateRecipeIngredients(recipeText, peopleCount, difficulty)
+      
+      // Transform the result to match the expected format
+      const transformedData = {
+        title: result.recipe_name,
+        servings: peopleCount,
+        cookTime: result.cooking_time || "Tempo não especificado",
+        ingredients: result.ingredients.map((ingredient: any) => ({
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          category: ingredient.category
+        }))
+      }
+      
+      setExtractedData(transformedData)
+      
+      toast({
+        title: "Ingredientes extraídos!",
+        description: `Foram extraídos ${result.total_ingredients} ingredientes da receita.`,
+      })
+    } catch (err) {
+      console.error("Error extracting ingredients:", err)
+      toast({
+        title: "Erro ao extrair ingredientes",
+        description: "Não foi possível extrair os ingredientes. Tente novamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -66,40 +67,73 @@ export function RecipeGenerator() {
         <CardHeader>
           <CardTitle className="font-heading flex items-center">
             <ChefHat className="mr-2 h-5 w-5 text-primary" />
-            Recipe to Shopping List
+            Receita para Lista de Compras
           </CardTitle>
           <CardDescription>
-            Paste your recipe text and let AI extract the ingredients for your shopping list.
+            Cole o texto da sua receita e deixe a IA extrair os ingredientes para sua lista de compras.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="recipe" className="text-sm font-medium">
-              Recipe Text
+              Texto da Receita
             </label>
             <Textarea
               id="recipe"
-              placeholder="Paste your recipe here... (e.g., 'Creamy Chicken Alfredo Pasta: 1 lb chicken breast, 12 oz fettuccine pasta, 1 cup heavy cream...')"
+              placeholder="Cole sua receita aqui... (ex: 'Bolo de Chocolate: 2 xícaras de farinha, 1 xícara de açúcar, 3 ovos...')"
               value={recipeText}
               onChange={(e) => setRecipeText(e.target.value)}
               rows={6}
               className="resize-none"
             />
           </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="people" className="text-sm font-medium">
+                Pessoas
+              </label>
+              <input
+                id="people"
+                type="number"
+                min="1"
+                max="20"
+                value={peopleCount}
+                onChange={(e) => setPeopleCount(parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="difficulty" className="text-sm font-medium">
+                Dificuldade
+              </label>
+              <select
+                id="difficulty"
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as 'fácil' | 'normal' | 'difícil')}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm"
+              >
+                <option value="fácil">Fácil</option>
+                <option value="normal">Normal</option>
+                <option value="difícil">Difícil</option>
+              </select>
+            </div>
+          </div>
+          
           <Button
             onClick={handleExtract}
-            disabled={!recipeText.trim() || isProcessing}
+            disabled={!recipeText.trim() || isLoading}
             className="w-full font-heading"
           >
-            {isProcessing ? (
+            {isLoading ? (
               <>
-                <Sparkles className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processando...
               </>
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Extract Ingredients
+                Extrair Ingredientes
               </>
             )}
           </Button>
@@ -113,13 +147,13 @@ export function RecipeGenerator() {
             <div className="flex items-center justify-between">
               <CardTitle className="font-heading">{extractedData.title}</CardTitle>
               <Button onClick={handleAddToList} className="font-heading">
-                Add to Shopping List
+                Adicionar à Lista
               </Button>
             </div>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center">
                 <Users className="mr-1 h-4 w-4" />
-                {extractedData.servings} servings
+                {extractedData.servings} porções
               </div>
               <div className="flex items-center">
                 <Clock className="mr-1 h-4 w-4" />
@@ -128,7 +162,7 @@ export function RecipeGenerator() {
             </div>
           </CardHeader>
           <CardContent>
-            <ExtractedIngredients ingredients={extractedData.ingredients} />
+            <ExtractedIngredients ingredients={extractedData.ingredients} onAddToList={handleAddToList} />
           </CardContent>
         </Card>
       )}

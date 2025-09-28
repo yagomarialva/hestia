@@ -13,11 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Loader2 } from "lucide-react"
 
 interface CreateListDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreateList: (name: string, description: string) => void
+  onCreateList: (name: string, description: string) => Promise<void>
 }
 
 export function CreateListDialog({ open, onOpenChange, onCreateList }: CreateListDialogProps) {
@@ -30,14 +31,16 @@ export function CreateListDialog({ open, onOpenChange, onCreateList }: CreateLis
     if (!name.trim()) return
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      onCreateList(name.trim(), description.trim())
+    try {
+      await onCreateList(name.trim(), description.trim())
       setName("")
       setDescription("")
-      setIsLoading(false)
       onOpenChange(false)
-    }, 1000)
+    } catch (error) {
+      console.error('Error creating list:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -45,39 +48,46 @@ export function CreateListDialog({ open, onOpenChange, onCreateList }: CreateLis
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-heading">Create New List</DialogTitle>
+            <DialogTitle className="font-heading">Criar Nova Lista</DialogTitle>
             <DialogDescription>
-              Create a new shopping list to organize your items.
+              Crie uma nova lista de compras para organizar seus itens.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">List Name</Label>
+              <Label htmlFor="name">Nome da Lista</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Weekly Groceries"
+                placeholder="ex: Compras da Semana"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description">Descrição (Opcional)</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g., Regular weekly shopping items"
+                placeholder="ex: Lista para compras da semana, incluindo frutas e verduras"
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()} className="font-heading">
-              {isLoading ? "Creating..." : "Create List"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                "Criar Lista"
+              )}
             </Button>
           </DialogFooter>
         </form>

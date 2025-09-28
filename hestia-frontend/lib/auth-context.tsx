@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { authService, User as ApiUser, LoginData, RegisterData } from './auth-service'
+import { apiInterceptor } from './api-interceptor'
 
 interface User {
   id: number
@@ -43,17 +44,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Check if user is logged in on mount
     const storedUser = localStorage.getItem('user')
-    if (storedUser) {
+    const token = localStorage.getItem('access_token')
+    
+    if (storedUser && token && apiInterceptor.isTokenValid()) {
       try {
         const userData = JSON.parse(storedUser)
         setUser(userData)
         setIsAuthenticated(true)
+        // Configurar o router no interceptor
+        apiInterceptor.setRouter(router)
       } catch (error) {
         console.error('Error parsing stored user:', error)
-        localStorage.removeItem('user')
+        handleLogout()
       }
+    } else if (storedUser || token) {
+      // Token inválido ou expirado
+      handleLogout()
     }
-  }, [])
+  }, []) // Removido router da dependência para evitar loop infinito
 
   const login = async (credentials: LoginData) => {
     try {
@@ -83,11 +91,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const logout = () => {
+  const handleLogout = () => {
     setUser(null)
     setIsAuthenticated(false)
     localStorage.removeItem('user')
+    localStorage.removeItem('access_token')
     router.push('/auth/login')
+  }
+
+  const logout = () => {
+    handleLogout()
   }
 
   const value = {

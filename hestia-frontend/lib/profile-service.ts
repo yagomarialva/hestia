@@ -1,4 +1,5 @@
 import { buildApiUrl, API_CONFIG } from './api-config'
+import { apiInterceptor } from './api-interceptor'
 
 export interface UserProfile {
   id: number
@@ -65,15 +66,10 @@ class ProfileService {
   // Profile Management
   async getProfile(): Promise<UserProfile> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.USERS}/profile`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.USERS}/profile`), {
         method: 'GET',
-        headers: await this.getAuthHeaders(),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to fetch profile')
-      }
 
       return await response.json()
     } catch (error) {
@@ -84,16 +80,11 @@ class ProfileService {
 
   async updateProfile(data: UpdateProfileData): Promise<UserProfile> {
     try {
-      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.USERS}/profile`), {
+      const response = await apiInterceptor.fetchWithAuth(buildApiUrl(`${API_CONFIG.ENDPOINTS.USERS}/profile`), {
         method: 'PUT',
-        headers: await this.getAuthHeaders(),
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to update profile')
-      }
 
       return await response.json()
     } catch (error) {

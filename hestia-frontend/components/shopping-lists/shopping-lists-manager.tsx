@@ -4,81 +4,89 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Loader2 } from "lucide-react"
 import { CreateListDialog } from "./create-list-dialog"
 import { ShoppingListCard } from "./shopping-list-card"
-
-// Mock data - replace with real data management
-const mockLists = [
-  {
-    id: 1,
-    name: "Weekly test ",
-    description: "Regular weekly shopping items",
-    itemCount: 12,
-    completedCount: 9,
-    lastUpdated: "2 hours ago",
-    status: "active" as const,
-    items: [
-      { id: 1, name: "Organic Bananas", category: "Produce", completed: true },
-      { id: 2, name: "Greek Yogurt", category: "Dairy", completed: true },
-      { id: 3, name: "Whole Wheat Bread", category: "Bakery", completed: false },
-      { id: 4, name: "Chicken Breast", category: "Meat", completed: false },
-    ],
-  },
-  {
-    id: 2,
-    name: "Dinner Party",
-    description: "Items for Saturday's dinner party",
-    itemCount: 15,
-    completedCount: 15,
-    lastUpdated: "1 day ago",
-    status: "completed" as const,
-    items: [],
-  },
-  {
-    id: 3,
-    name: "Breakfast Essentials",
-    description: "Morning routine items",
-    itemCount: 6,
-    completedCount: 3,
-    lastUpdated: "3 days ago",
-    status: "active" as const,
-    items: [
-      { id: 5, name: "Oatmeal", category: "Pantry", completed: true },
-      { id: 6, name: "Fresh Berries", category: "Produce", completed: false },
-    ],
-  },
-]
+import { useShoppingListsContext } from "@/lib/shopping-lists-context"
+import { formatDistanceToNow } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 export function ShoppingListsManager() {
-  const [lists, setLists] = useState(mockLists)
+  const { lists, loading, error, createList, deleteList } = useShoppingListsContext()
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "completed">("all")
 
+  const getListStatus = (list: any) => {
+    if (!list.items || list.items.length === 0) return "empty"
+    const completedCount = list.items.filter((item: any) => item.completed).length
+    return completedCount === list.items.length ? "completed" : "active"
+  }
+
+  const getCompletedCount = (list: any) => {
+    if (!list.items) return 0
+    return list.items.filter((item: any) => item.completed).length
+  }
+
+  const getItemCount = (list: any) => {
+    return list.items?.length || 0
+  }
+
+  const formatLastUpdated = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { 
+        addSuffix: true, 
+        locale: ptBR 
+      })
+    } catch {
+      return "Data inválida"
+    }
+  }
+
   const filteredLists = lists.filter((list) => {
     const matchesSearch = list.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesFilter = filterStatus === "all" || list.status === filterStatus
+    const status = getListStatus(list)
+    const matchesFilter = filterStatus === "all" || status === filterStatus
     return matchesSearch && matchesFilter
   })
 
-  const handleCreateList = (name: string, description: string) => {
-    const newList = {
-      id: Date.now(),
-      name,
-      description,
-      itemCount: 0,
-      completedCount: 0,
-      lastUpdated: "Just now",
-      status: "active" as const,
-      items: [],
+  const handleCreateList = async (name: string, description: string) => {
+    try {
+      await createList({
+        name,
+        description: description || undefined
+      })
+      setIsCreateDialogOpen(false)
+    } catch (error) {
+      console.error('Error creating list:', error)
     }
-    setLists([newList, ...lists])
-    setIsCreateDialogOpen(false)
   }
 
-  const handleDeleteList = (listId: number) => {
-    setLists(lists.filter((list) => list.id !== listId))
+  const handleDeleteList = async (listId: number) => {
+    try {
+      await deleteList(listId)
+    } catch (error) {
+      console.error('Error deleting list:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-destructive mb-4">Erro ao carregar listas: {error}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Tentar Novamente
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -89,7 +97,7 @@ export function ShoppingListsManager() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search lists..."
+              placeholder="Buscar listas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -102,13 +110,13 @@ export function ShoppingListsManager() {
             onChange={(e) => setFilterStatus(e.target.value as "all" | "active" | "completed")}
             className="px-3 py-2 border border-border rounded-md bg-background text-sm"
           >
-            <option value="all">All Lists</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
+            <option value="all">Todas as Listas</option>
+            <option value="active">Ativas</option>
+            <option value="completed">Concluídas</option>
           </select>
           <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
             <Plus className="mr-2 h-4 w-4" />
-            New List
+            Nova Lista
           </Button>
         </div>
       </div>
@@ -116,22 +124,38 @@ export function ShoppingListsManager() {
       {/* Lists Grid */}
       {filteredLists.length === 0 ? (
         <div className="text-center py-12">
-          <h3 className="text-lg font-heading font-semibold mb-2">No lists found</h3>
+          <h3 className="text-lg font-heading font-semibold mb-2">Nenhuma lista encontrada</h3>
           <p className="text-muted-foreground mb-4">
-            {searchQuery ? "Try adjusting your search terms." : "Create your first shopping list to get started."}
+            {searchQuery ? "Tente ajustar os termos de busca." : "Crie sua primeira lista de compras para começar."}
           </p>
           {!searchQuery && (
             <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
               <Plus className="mr-2 h-4 w-4" />
-              Create List
+              Criar Lista
             </Button>
           )}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredLists.map((list) => (
-            <ShoppingListCard key={list.id} list={list} onDelete={handleDeleteList} />
-          ))}
+          {filteredLists.map((list) => {
+            const status = getListStatus(list)
+            const completedCount = getCompletedCount(list)
+            const itemCount = getItemCount(list)
+            
+            return (
+              <ShoppingListCard 
+                key={list.id} 
+                list={{
+                  ...list,
+                  itemCount,
+                  completedCount,
+                  lastUpdated: formatLastUpdated(list.updated_at || list.created_at),
+                  status: status as "active" | "completed"
+                }} 
+                onDelete={handleDeleteList} 
+              />
+            )
+          })}
         </div>
       )}
 

@@ -14,7 +14,8 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en")
+  const [language, setLanguage] = useState<Language>("pt") // Default to Portuguese
+  const [isLoaded, setIsLoaded] = useState(false)
 
   // Load language from localStorage on mount
   useEffect(() => {
@@ -22,6 +23,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     if (savedLanguage && (savedLanguage === "en" || savedLanguage === "pt")) {
       setLanguage(savedLanguage)
     }
+    setIsLoaded(true)
   }, [])
 
   // Save language to localStorage when it changes
@@ -32,6 +34,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   // Translation function
   const t = (key: string): string => {
+    if (!isLoaded) {
+      // Return Portuguese translation during SSR and initial load to prevent flickering
+      return ptTranslations[key] || key
+    }
     const translations = language === "pt" ? ptTranslations : enTranslations
     return translations[key] || key
   }

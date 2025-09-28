@@ -19,11 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Loader2 } from "lucide-react"
 
 interface AddItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAddItem: (name: string, category: string, quantity: string) => void
+  onAddItem: (name: string, category: string, quantity: string) => Promise<void>
 }
 
 const categories = [
@@ -51,15 +52,17 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
     if (!name.trim() || !category) return
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      onAddItem(name.trim(), category, quantity.trim())
+    try {
+      await onAddItem(name.trim(), category, quantity.trim())
       setName("")
       setCategory("")
       setQuantity("")
-      setIsLoading(false)
       onOpenChange(false)
-    }, 500)
+    } catch (error) {
+      console.error('Error adding item:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -67,27 +70,27 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-heading">Add New Item</DialogTitle>
+            <DialogTitle className="font-heading">Adicionar Novo Item</DialogTitle>
             <DialogDescription>
-              Add a new item to your shopping list.
+              Adicione um novo item à sua lista de compras.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Item Name</Label>
+              <Label htmlFor="name">Nome do Item</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Organic Bananas"
+                placeholder="ex: Banana Orgânica"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">Categoria</Label>
               <Select value={category} onValueChange={setCategory} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -99,21 +102,28 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity (Optional)</Label>
+              <Label htmlFor="quantity">Quantidade (Opcional)</Label>
               <Input
                 id="quantity"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                placeholder="e.g., 2 lbs, 1 container"
+                placeholder="ex: 2 kg, 1 unidade"
               />
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim() || !category} className="font-heading">
-              {isLoading ? "Adding..." : "Add Item"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adicionando...
+                </>
+              ) : (
+                "Adicionar Item"
+              )}
             </Button>
           </DialogFooter>
         </form>

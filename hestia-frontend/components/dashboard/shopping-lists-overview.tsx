@@ -3,14 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Calendar, CheckCircle2, Loader2 } from "lucide-react"
-import { useShoppingLists } from "@/hooks/use-shopping-lists"
+import { MoreHorizontal, Calendar, CheckCircle2, Loader2, RefreshCw } from "lucide-react"
+import { useShoppingListsContext } from "@/lib/shopping-lists-context"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
 export function ShoppingListsOverview() {
-  const { lists, loading, error } = useShoppingLists()
+  const { lists, loading, error, fetchLists } = useShoppingListsContext()
 
   const formatLastUpdated = (dateString: string) => {
     try {
@@ -70,8 +70,21 @@ export function ShoppingListsOverview() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-heading">Suas Listas de Compras</CardTitle>
-        <CardDescription>Gerenciar e acompanhar suas listas de compras</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="font-heading">Suas Listas de Compras</CardTitle>
+            <CardDescription>Gerenciar e acompanhar suas listas de compras</CardDescription>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchLists}
+            disabled={loading}
+            className="h-8 w-8 p-0"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {recentLists.length === 0 ? (
