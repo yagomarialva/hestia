@@ -21,25 +21,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, ChefHat, ShoppingCart, Loader2, Sparkles } from "lucide-react"
+import { Plus, ShoppingCart, Loader2, Sparkles } from "lucide-react"
 import { useAI } from "@/hooks/use-ai"
 import { useShoppingListsContext } from "@/lib/shopping-lists-context"
 import { useToast } from "@/hooks/use-toast"
 
 export function QuickActions() {
   const [isCreateListOpen, setIsCreateListOpen] = useState(false)
-  const [isRecipeOpen, setIsRecipeOpen] = useState(false)
+  const [isGenerateListOpen, setIsGenerateListOpen] = useState(false)
   const [isQuickShopOpen, setIsQuickShopOpen] = useState(false)
   
   // Form states
   const [listName, setListName] = useState("")
   const [listDescription, setListDescription] = useState("")
-  const [recipeName, setRecipeName] = useState("")
+  const [theme, setTheme] = useState("")
   const [peopleCount, setPeopleCount] = useState(1)
-  const [difficulty, setDifficulty] = useState<'fácil' | 'normal' | 'difícil'>('normal')
   const [quickItem, setQuickItem] = useState("")
   
-  const { generateShoppingList, generateRecipeIngredients, classifyProduct, isLoading, error } = useAI()
+  const { generateShoppingList, classifyProduct, isLoading, error } = useAI()
   const { createList } = useShoppingListsContext()
   const { toast } = useToast()
 
@@ -69,25 +68,24 @@ export function QuickActions() {
     }
   }
 
-  const handleGenerateRecipe = async () => {
-    if (!recipeName.trim()) return
+  const handleGenerateList = async () => {
+    if (!theme.trim()) return
 
     try {
-      const result = await generateRecipeIngredients(recipeName, peopleCount, difficulty)
+      const result = await generateShoppingList(theme.trim(), peopleCount)
       
       toast({
-        title: "Ingredientes gerados!",
-        description: `Foram gerados ${result.total_ingredients} ingredientes para "${recipeName}".`,
+        title: "Lista gerada!",
+        description: `A lista "${result.theme}" foi criada com ${result.total_items} itens.`,
       })
       
-      setIsRecipeOpen(false)
-      setRecipeName("")
+      setIsGenerateListOpen(false)
+      setTheme("")
       setPeopleCount(1)
-      setDifficulty('normal')
     } catch (err) {
       toast({
-        title: "Erro ao gerar ingredientes",
-        description: "Não foi possível gerar os ingredientes. Tente novamente.",
+        title: "Erro ao gerar lista",
+        description: "Não foi possível gerar a lista. Tente novamente.",
         variant: "destructive",
       })
     }
@@ -130,14 +128,14 @@ export function QuickActions() {
         </CardContent>
       </Card>
 
-      {/* AI Recipe Card */}
-      <Card className="hover:shadow-md transition-all duration-200 hover:scale-105 cursor-pointer" onClick={() => setIsRecipeOpen(true)}>
+      {/* Generate List Card */}
+      <Card className="hover:shadow-md transition-all duration-200 hover:scale-105 cursor-pointer" onClick={() => setIsGenerateListOpen(true)}>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-heading flex items-center">
-            <ChefHat className="mr-2 h-5 w-5 text-secondary" />
-            IA Receita
+            <Sparkles className="mr-2 h-5 w-5 text-secondary" />
+            Gerar lista automaticamente
           </CardTitle>
-          <CardDescription>Gerar ingredientes de receitas com IA</CardDescription>
+          <CardDescription>Criar listas de compras com IA baseadas em temas</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="secondary" className="w-full font-heading">
@@ -217,63 +215,57 @@ export function QuickActions() {
         </DialogContent>
       </Dialog>
 
-      {/* Recipe Dialog */}
-      <Dialog open={isRecipeOpen} onOpenChange={setIsRecipeOpen}>
+      {/* Generate List Dialog */}
+      <Dialog open={isGenerateListOpen} onOpenChange={setIsGenerateListOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center">
-              <ChefHat className="mr-2 h-5 w-5" />
-              Gerar Ingredientes com IA
+              <Sparkles className="mr-2 h-5 w-5" />
+              Gerar Lista com IA
             </DialogTitle>
             <DialogDescription>
-              Digite o nome de uma receita e a IA gerará os ingredientes necessários.
+              Digite um tema e a IA criará uma lista de compras completa para você.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="recipeName">Nome da Receita</Label>
+              <Label htmlFor="theme">Tema da Lista</Label>
               <Input
-                id="recipeName"
-                value={recipeName}
-                onChange={(e) => setRecipeName(e.target.value)}
-                placeholder="ex: Bolo de Chocolate"
+                id="theme"
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                placeholder="ex: Churrasco para 6 pessoas, Festa infantil, Jantar romântico"
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="peopleCount">Pessoas</Label>
-                <Input
-                  id="peopleCount"
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={peopleCount}
-                  onChange={(e) => setPeopleCount(parseInt(e.target.value) || 1)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Dificuldade</Label>
-                <Select value={difficulty} onValueChange={(value: 'fácil' | 'normal' | 'difícil') => setDifficulty(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fácil">Fácil</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="difícil">Difícil</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="peopleCount">Número de Pessoas</Label>
+              <Input
+                id="peopleCount"
+                type="number"
+                min="1"
+                max="50"
+                value={peopleCount}
+                onChange={(e) => setPeopleCount(parseInt(e.target.value) || 1)}
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Exemplos de temas:</strong>
+              <ul className="mt-1 space-y-1">
+                <li>• "Churrasco para 10 pessoas"</li>
+                <li>• "Festa de aniversário infantil"</li>
+                <li>• "Jantar romântico para 2"</li>
+                <li>• "Compras da semana para família de 4"</li>
+              </ul>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRecipeOpen(false)}>
+            <Button variant="outline" onClick={() => setIsGenerateListOpen(false)}>
               Cancelar
             </Button>
             <Button 
-              onClick={handleGenerateRecipe} 
-              disabled={!recipeName.trim() || isLoading}
+              onClick={handleGenerateList} 
+              disabled={!theme.trim() || isLoading}
               className="font-heading"
             >
               {isLoading ? (
@@ -284,7 +276,7 @@ export function QuickActions() {
               ) : (
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Gerar Ingredientes
+                  Gerar Lista
                 </>
               )}
             </Button>

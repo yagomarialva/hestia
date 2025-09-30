@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChefHat, Sparkles, Clock, Users, Loader2 } from "lucide-react"
 import { ExtractedIngredients } from "./extracted-ingredients"
 import { AddToListDialog } from "./add-to-list-dialog"
+import { AISuggestions } from "@/components/ai/ai-suggestions"
 import { useAI } from "@/hooks/use-ai"
 import { useToast } from "@/hooks/use-toast"
 
@@ -165,6 +166,15 @@ export function RecipeGenerator() {
             <ExtractedIngredients ingredients={extractedData.ingredients} onAddToList={handleAddToList} />
           </CardContent>
         </Card>
+      )}
+
+      {/* Sugestões Inteligentes da IA */}
+      {extractedData && (
+        <AISuggestions
+          suggestions={extractedData.contextual_suggestions}
+          compatibility={extractedData.compatibility}
+          smartSuggestions={extractedData.smart_suggestions}
+        />
       )}
 
       {/* Add to List Dialog */}

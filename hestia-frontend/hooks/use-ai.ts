@@ -15,6 +15,7 @@ export function useAI() {
         people_count: peopleCount
       }
       
+      // Usar método simples para evitar prompt contextualizado no nome
       const result = await aiService.generateShoppingList(data)
       return result
     } catch (err) {
@@ -48,6 +49,7 @@ export function useAI() {
         difficulty
       }
       
+      // Usar método simples para evitar prompt contextualizado
       const result = await aiService.generateRecipeIngredients(data)
       return result
     } catch (err) {
@@ -79,7 +81,8 @@ export function useAI() {
         product_name: productName
       }
       
-      const result = await aiService.classifyProduct(data)
+      // Usar método com contexto para melhor classificação
+      const result = await aiService.classifyProductWithContext(data)
       return result
     } catch (err) {
       let errorMessage = 'Erro ao classificar produto'

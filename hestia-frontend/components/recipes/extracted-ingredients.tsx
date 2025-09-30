@@ -55,6 +55,23 @@ export function ExtractedIngredients({ ingredients, onAddToList }: ExtractedIngr
     {} as Record<string, Array<Ingredient & { index: number }>>,
   )
 
+  // Gerar resumo dos ingredientes
+  const generateSummary = () => {
+    const totalIngredients = ingredients.length
+    const categories = Object.keys(groupedIngredients)
+    const mainCategories = categories.slice(0, 3).join(', ')
+    const remainingCategories = categories.length - 3
+    
+    return {
+      total: totalIngredients,
+      mainCategories,
+      remainingCategories,
+      hasMore: remainingCategories > 0
+    }
+  }
+
+  const summary = generateSummary()
+
   return (
     <Card>
       <CardHeader>
@@ -79,6 +96,23 @@ export function ExtractedIngredients({ ingredients, onAddToList }: ExtractedIngr
           </div>
         </div>
       </CardHeader>
+      
+      {/* Resumo Geral */}
+      <div className="px-6 pb-4">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+          <p className="font-bold text-primary text-sm leading-relaxed">
+            📋 <strong>Resumo da Receita:</strong> {summary.total} ingredientes organizados em {Object.keys(groupedIngredients).length} categorias principais. 
+            {summary.mainCategories && (
+              <>
+                {' '}Principais categorias: <strong>{summary.mainCategories}</strong>
+                {summary.hasMore && ` e mais ${summary.remainingCategories} categorias`}.
+              </>
+            )}
+            {' '}Todos os ingredientes foram extraídos automaticamente pela IA e estão prontos para serem adicionados à sua lista de compras.
+          </p>
+        </div>
+      </div>
+      
       <CardContent className="space-y-6">
         {Object.entries(groupedIngredients).map(([category, categoryIngredients]) => (
           <div key={category} className="space-y-3">
