@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
-  // Para desenvolvimento local
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8002/api/v1',
+  // Para desenvolvimento local e deploy via nginx
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1',
   
   // Endpoints
   ENDPOINTS: {
