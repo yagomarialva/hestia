@@ -12,4 +12,7 @@ pydantic-settings==2.1.0
 email-validator==2.1.0
 python-dotenv==1.0.0
 swagger-ui-bundle==0.0.9
-httpx==0.25.2 
+httpx>=0.27.0
+recipe-scrapers
+python-telegram-bot==21.10
+ddgs

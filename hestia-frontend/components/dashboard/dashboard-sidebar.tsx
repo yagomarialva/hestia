@@ -5,14 +5,15 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Home, ShoppingCart, ChefHat, User, Settings, Menu, X, LogOut } from "lucide-react"
+import { Home, ShoppingCart, ChefHat, User, Settings, Menu, X, LogOut, BookOpen, Archive } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
-import { useAuth } from "@/lib/auth-context"
 
 const navigation = [
   { name: "nav.dashboard", href: "/dashboard", icon: Home },
   { name: "nav.shopping_lists", href: "/dashboard/lists", icon: ShoppingCart },
+  { name: "Controle de Despensa", href: "/dashboard/pantry", icon: Archive },
   { name: "nav.recipe_generator", href: "/dashboard/recipes", icon: ChefHat },
+  { name: "Minhas Receitas", href: "/dashboard/saved-recipes", icon: BookOpen },
   { name: "nav.profile", href: "/dashboard/profile", icon: User },
   { name: "nav.settings", href: "/dashboard/settings", icon: Settings },
 ]
@@ -21,8 +22,6 @@ export function DashboardSidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const { t } = useI18n()
-  const { logout } = useAuth()
-
   return (
     <>
       {/* Mobile menu button */}
@@ -73,17 +72,7 @@ export function DashboardSidebar() {
             })}
           </nav>
 
-          {/* User section */}
-          <div className="px-4 py-4 border-t border-sidebar-border">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/50"
-              onClick={logout}
-            >
-              <LogOut className="mr-3 h-4 w-4" />
-              {t("nav.sign_out")}
-            </Button>
-          </div>
+          {/* User section removed */}
         </div>
       </div>
 

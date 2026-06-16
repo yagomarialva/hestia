@@ -34,14 +34,17 @@ class SuggestionRequest(BaseModel):
     limit: Optional[int] = 10
 
 
+class RecipeUrlRequest(BaseModel):
+    url: str
+
 class RecipeIngredientsRequest(BaseModel):
     recipe_name: str
     people_count: Optional[int] = 1
     difficulty: Optional[str] = "normal"  # fácil, normal, difícil
 
-
 class RecipeIngredientsResponse(BaseModel):
     recipe_name: str
+    image_url: Optional[str] = None
     ingredients: List[dict]
     total_ingredients: int
     estimated_cost: Optional[str] = None
@@ -56,4 +59,13 @@ class RecipeIngredientsResponse(BaseModel):
 
 class SuggestionResponse(BaseModel):
     suggested_items: List[str]
-    based_on_history: bool 
+    based_on_history: bool
+
+class RecipeSearchResult(BaseModel):
+    title: str
+    url: str
+    snippet: Optional[str] = None
+
+class RecipeSearchResponse(BaseModel):
+    query: str
+    results: List[RecipeSearchResult]

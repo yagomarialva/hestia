@@ -14,11 +14,12 @@ services:
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - OLLAMA_URL=http://ollama:11434
+      - TELEGRAM_BOT_TOKEN=8474133606:AAGDiYdvbJoAZqWUFakf_R-mQD6NFiVULWk
     depends_on:
       - db
       - ollama
-    volumes:
-      - ./Hestia-backend:/app
+#    volumes:
+#      - ./Hestia-backend:/app
     networks:
       - hestia-network
     restart: unless-stopped
@@ -66,13 +67,13 @@ services:
 
   # Nginx - Reverse Proxy
   nginx:
-    image: nginx:alpine
+    build: ./nginx
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+#    volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - frontend
       - backend

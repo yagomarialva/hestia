@@ -14,8 +14,8 @@ services:
     depends_on:
       - db
       - ollama
-    volumes:
-      - .:/app
+#    volumes:
+#      - .:/app
     networks:
       - hestia-network
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Work_Sans, Open_Sans } from "next/font/google"
 import "./globals.css"
 import { I18nProvider } from "@/lib/i18n/context"
-import { AuthProvider } from "@/lib/auth-context"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const workSans = Work_Sans({
   subsets: ["latin"],
@@ -30,12 +30,17 @@ export default function RootLayout({
   children: any
 }>) {
   return (
-    <html lang="pt-BR" className={`${workSans.variable} ${openSans.variable} antialiased`}>
-      <body className="min-h-screen bg-background font-sans text-foreground">
+    <html lang="pt-BR" suppressHydrationWarning className={`${workSans.variable} ${openSans.variable} antialiased`}>
+      <body className="min-h-screen bg-background font-sans text-foreground fabulous-bg selection:bg-primary/30">
         <I18nProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
         </I18nProvider>
       </body>
     </html>

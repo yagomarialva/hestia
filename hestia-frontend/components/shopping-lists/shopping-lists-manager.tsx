@@ -1,60 +1,69 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Loader2 } from "lucide-react"
 import { CreateListDialog } from "./create-list-dialog"
 import { ShoppingListCard } from "./shopping-list-card"
+import { useI18n } from "@/lib/i18n/context"
+import { buildApiUrl, API_CONFIG } from "@/lib/api-config"
 
-// Mock data - replace with real data management
-const mockLists = [
-  {
-    id: 1,
-    name: "Weekly test ",
-    description: "Regular weekly shopping items",
-    itemCount: 12,
-    completedCount: 9,
-    lastUpdated: "2 hours ago",
-    status: "active" as const,
-    items: [
-      { id: 1, name: "Organic Bananas", category: "Produce", completed: true },
-      { id: 2, name: "Greek Yogurt", category: "Dairy", completed: true },
-      { id: 3, name: "Whole Wheat Bread", category: "Bakery", completed: false },
-      { id: 4, name: "Chicken Breast", category: "Meat", completed: false },
-    ],
-  },
-  {
-    id: 2,
-    name: "Dinner Party",
-    description: "Items for Saturday's dinner party",
-    itemCount: 15,
-    completedCount: 15,
-    lastUpdated: "1 day ago",
-    status: "completed" as const,
-    items: [],
-  },
-  {
-    id: 3,
-    name: "Breakfast Essentials",
-    description: "Morning routine items",
-    itemCount: 6,
-    completedCount: 3,
-    lastUpdated: "3 days ago",
-    status: "active" as const,
-    items: [
-      { id: 5, name: "Oatmeal", category: "Pantry", completed: true },
-      { id: 6, name: "Fresh Berries", category: "Produce", completed: false },
-    ],
-  },
-]
+interface BackendItem {
+  id: number;
+  name: string;
+  completed: boolean;
+}
+
+interface BackendShoppingList {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+  items: BackendItem[];
+}
 
 export function ShoppingListsManager() {
-  const [lists, setLists] = useState(mockLists)
+  const { t } = useI18n()
+  const [lists, setLists] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "completed">("all")
+
+  const fetchLists = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SHOPPING_LISTS))
+      if (res.ok) {
+        const data: BackendShoppingList[] = await res.json()
+        const mappedLists = data.map(list => {
+          const itemCount = list.items?.length || 0;
+          const completedCount = list.items?.filter(i => i.completed).length || 0;
+          return {
+            id: list.id,
+            name: list.name,
+            description: list.description || "",
+            itemCount,
+            completedCount,
+            lastUpdated: new Date(list.created_at).toLocaleDateString(),
+            status: (itemCount > 0 && itemCount === completedCount) ? "completed" : "active",
+            items: list.items || []
+          }
+        })
+        setLists(mappedLists)
+      }
+    } catch (error) {
+      console.error("Failed to fetch lists", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLists()
+  }, [])
 
   const filteredLists = lists.filter((list) => {
     const matchesSearch = list.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -62,23 +71,35 @@ export function ShoppingListsManager() {
     return matchesSearch && matchesFilter
   })
 
-  const handleCreateList = (name: string, description: string) => {
-    const newList = {
-      id: Date.now(),
-      name,
-      description,
-      itemCount: 0,
-      completedCount: 0,
-      lastUpdated: "Just now",
-      status: "active" as const,
-      items: [],
+  const handleCreateList = async (name: string, description: string) => {
+    try {
+      const res = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SHOPPING_LISTS), {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, description })
+      })
+      if (res.ok) {
+        fetchLists()
+        setIsCreateDialogOpen(false)
+      }
+    } catch (error) {
+      console.error("Failed to create list", error)
     }
-    setLists([newList, ...lists])
-    setIsCreateDialogOpen(false)
   }
 
-  const handleDeleteList = (listId: number) => {
-    setLists(lists.filter((list) => list.id !== listId))
+  const handleDeleteList = async (listId: number) => {
+    try {
+      const res = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.SHOPPING_LISTS}/${listId}`), {
+        method: "DELETE"
+      })
+      if (res.ok) {
+        fetchLists()
+      }
+    } catch (error) {
+      console.error("Failed to delete list", error)
+    }
   }
 
   return (
@@ -89,7 +110,7 @@ export function ShoppingListsManager() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search lists..."
+              placeholder={t("lists.search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -101,45 +122,49 @@ export function ShoppingListsManager() {
               size="sm"
               onClick={() => setFilterStatus("all")}
             >
-              All
+              {t("lists.all")}
             </Button>
             <Button
               variant={filterStatus === "active" ? "default" : "outline"}
               size="sm"
               onClick={() => setFilterStatus("active")}
             >
-              Active
+              {t("lists.active")}
             </Button>
             <Button
               variant={filterStatus === "completed" ? "default" : "outline"}
               size="sm"
               onClick={() => setFilterStatus("completed")}
             >
-              Completed
+              {t("lists.completed")}
             </Button>
           </div>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
           <Plus className="mr-2 h-4 w-4" />
-          New List
+          {t("lists.new_list")}
         </Button>
       </div>
 
       {/* Lists Grid */}
-      {filteredLists.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : filteredLists.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
             <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
               <Plus className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-heading font-semibold mb-2">No lists found</h3>
+            <h3 className="text-lg font-heading font-semibold mb-2">{t("lists.no_lists_found")}</h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery ? "Try adjusting your search terms." : "Create your first shopping list to get started."}
+              {searchQuery ? t("lists.try_adjusting") : t("lists.create_first")}
             </p>
             {!searchQuery && (
               <Button onClick={() => setIsCreateDialogOpen(true)} className="font-heading">
                 <Plus className="mr-2 h-4 w-4" />
-                Create List
+                {t("quick_actions.create_list")}
               </Button>
             )}
           </CardContent>
@@ -160,3 +185,4 @@ export function ShoppingListsManager() {
     </div>
   )
 }
+

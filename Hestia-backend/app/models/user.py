@@ -16,7 +16,9 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    shopping_lists = relationship("ShoppingList", back_populates="user")
+    shopping_lists = relationship("ShoppingList", back_populates="user", cascade="all, delete-orphan")
+    recipes = relationship("Recipe", back_populates="owner", cascade="all, delete-orphan")
+    pantry_items = relationship("PantryItem", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<User(id={self.id}, name='{self.name}', email='{self.email}')>" 
+        return f"<User(id={self.id}, name='{self.name}', email='{self.email}')>"

@@ -46,78 +46,74 @@ export default function HomePage() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/auth/login">Entrar</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/auth/register">Começar Grátis</Link>
+            <Button className="rounded-full px-6 shadow-md shadow-primary/20 hover:shadow-primary/40 transition-shadow" asChild>
+              <Link href="/dashboard">Acessar App</Link>
             </Button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Badge variant="secondary" className="w-fit">
-                  <Users className="w-4 h-4 mr-2" />
-                  1200+ usuários ativos
+      <section className="relative overflow-hidden py-24 lg:py-32 px-4 bg-gradient-to-b from-primary/10 via-background to-background">
+        <div className="absolute top-10 left-10 w-64 h-64 bg-secondary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+        <div className="absolute top-0 right-20 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-40 w-72 h-72 bg-accent/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+        
+        <div className="container relative mx-auto z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8 text-center lg:text-left">
+              <div className="space-y-6">
+                <Badge className="px-4 py-2 text-sm bg-white/80 text-primary border-primary/20 shadow-sm backdrop-blur-md mx-auto lg:mx-0 inline-flex">
+                  <Star className="w-4 h-4 mr-2 fill-secondary text-secondary" />
+                  Descubra uma nova forma de comprar
                 </Badge>
-                <h1 className="font-heading text-4xl md:text-6xl font-bold leading-tight">
-                  Listas de Compras
-                  <span className="text-primary block">Inteligentes</span>
+                <h1 className="font-heading text-5xl md:text-7xl font-extrabold leading-tight tracking-tight text-foreground">
+                  Sua lista de compras, <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                    mágica e simples.
+                  </span>
                 </h1>
-                <p className="text-xl text-muted-foreground max-w-lg">
-                  Transforme suas receitas em listas de compras organizadas com IA. 
-                  Economize tempo e nunca mais esqueça um ingrediente.
+                <p className="text-xl md:text-2xl text-muted-foreground max-w-lg mx-auto lg:mx-0">
+                  Deixe a inteligência artificial transformar suas receitas em listas organizadas instantaneamente.
                 </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="text-lg px-8 py-6" asChild>
-                  <Link href="/auth/register">
-                    Começar Grátis
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-                  <Link href="#how-it-works">
-                    <Play className="w-5 h-5 mr-2" />
-                    Ver Demonstração
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button size="lg" className="text-xl px-10 py-7" asChild>
+                  <Link href="/dashboard">
+                    Começar Minha Jornada
+                    <ArrowRight className="w-6 h-6 ml-2" />
                   </Link>
                 </Button>
               </div>
             </div>
             
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl p-8 border-2 border-dashed border-primary/30">
-                <div className="bg-card rounded-xl p-6 shadow-lg">
-                  <h3 className="font-heading text-xl font-semibold mb-4">Receita: Bolo de Chocolate</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm">2 xícaras de farinha de trigo</span>
+            <div className="relative mx-auto w-full max-w-md perspective-1000">
+              <div className="transform rotate-y-12 rotate-x-6 shadow-2xl rounded-[2.5rem] bg-white border-8 border-white/40 overflow-hidden">
+                <div className="bg-gradient-to-br from-primary to-secondary p-8 text-white">
+                  <h3 className="font-heading text-2xl font-bold mb-6 flex items-center gap-3">
+                    <Brain className="w-8 h-8" /> 
+                    Bolo de Cenoura
+                  </h3>
+                  <div className="space-y-4 bg-white/20 backdrop-blur-md rounded-2xl p-5">
+                    <div className="flex items-center space-x-3 bg-white/90 text-foreground p-3 rounded-xl shadow-sm">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <span className="font-medium">3 cenouras médias</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm">1 xícara de açúcar</span>
+                    <div className="flex items-center space-x-3 bg-white/90 text-foreground p-3 rounded-xl shadow-sm">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <span className="font-medium">4 ovos</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm">3 ovos</span>
+                    <div className="flex items-center space-x-3 bg-white/90 text-foreground p-3 rounded-xl shadow-sm">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <span className="font-medium">2 xícaras de açúcar</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm">1/2 xícara de cacau em pó</span>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      ✨ Lista gerada automaticamente pela IA
-                    </p>
                   </div>
                 </div>
               </div>
@@ -141,104 +137,56 @@ export default function HomePage() {
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 px-4">
+      <section id="benefits" className="py-24 px-4 bg-background">
         <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Benefícios
+          <div className="text-center mb-20">
+            <h2 className="font-heading text-4xl md:text-5xl font-extrabold mb-6 text-foreground">
+              Por que você vai amar?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Foque em como ajudamos você, não apenas nas funcionalidades
+              Criamos uma experiência pensada para trazer paz e organização para sua rotina.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Brain className="w-6 h-6 text-primary" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <Card className="text-center bg-primary/5 hover:bg-primary/10 transition-colors border-none group">
+              <CardHeader className="pt-8">
+                <div className="w-20 h-20 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform rotate-3">
+                  <Brain className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle>IA Inteligente</CardTitle>
+                <CardTitle className="text-2xl font-bold">Mente Tranquila</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Nossa IA analisa receitas e cria listas de compras organizadas automaticamente, 
-                  agrupando itens por categoria do supermercado.
+              <CardContent className="pb-8">
+                <CardDescription className="text-base text-foreground/80">
+                  Nossa IA pensa por você. Ela lê qualquer receita e organiza tudo instantaneamente, tirando a carga mental das compras.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-6 h-6 text-primary" />
+            <Card className="text-center bg-secondary/10 hover:bg-secondary/20 transition-colors border-none group">
+              <CardHeader className="pt-8">
+                <div className="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-secondary/30 group-hover:scale-110 transition-transform -rotate-3">
+                  <Zap className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle>Economia de Tempo</CardTitle>
+                <CardTitle className="text-2xl font-bold">Mais Tempo Livre</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Reduza o tempo gasto planejando compras em até 80%. 
-                  Foque no que importa: cozinhar e aproveitar.
+              <CardContent className="pb-8">
+                <CardDescription className="text-base text-foreground/80">
+                  Economize até 80% do tempo de planejamento. Use esse tempo para curtir sua comida e as pessoas que você ama.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <ShoppingCart className="w-6 h-6 text-primary" />
+            <Card className="text-center bg-accent/10 hover:bg-accent/20 transition-colors border-none group">
+              <CardHeader className="pt-8">
+                <div className="w-20 h-20 bg-accent rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-accent/30 group-hover:scale-110 transition-transform rotate-3">
+                  <ShoppingCart className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle>Nunca Esqueça Nada</CardTitle>
+                <CardTitle className="text-2xl font-bold">Compras Perfeitas</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Listas organizadas e verificáveis garantem que você nunca mais 
-                  esqueça um ingrediente essencial.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle>Compartilhamento</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Compartilhe listas com familiares e amigos. 
-                  Planeje refeições em grupo de forma colaborativa.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle>Organização Perfeita</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Listas organizadas por seções do supermercado, 
-                  facilitando sua jornada de compras.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle>Receitas Favoritas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Salve suas receitas favoritas e gere listas instantaneamente. 
-                  Sua biblioteca pessoal de culinária.
+              <CardContent className="pb-8">
+                <CardDescription className="text-base text-foreground/80">
+                  Tudo organizado pelos setores exatos do supermercado. Nunca mais dê voltas extras no corredor.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -247,48 +195,48 @@ export default function HomePage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="py-20 px-4 bg-muted/30">
+      <section id="how-it-works" className="py-24 px-4 relative">
+        <div className="absolute inset-0 bg-primary/5 skew-y-3 transform origin-top-left -z-10"></div>
         <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Como Funciona?
+          <div className="text-center mb-20">
+            <h2 className="font-heading text-4xl md:text-5xl font-extrabold mb-4">
+              Sua Jornada Mágica
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Comece a usar em 3 passos simples
+              Três passos simples para transformar o caos em ordem.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-foreground">1</span>
+          <div className="grid md:grid-cols-3 gap-12 relative">
+            <div className="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-1 bg-gradient-to-r from-primary via-secondary to-accent -translate-y-1/2 rounded-full opacity-30 z-0"></div>
+            
+            <div className="text-center relative z-10">
+              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border-4 border-primary">
+                <span className="text-4xl font-extrabold text-primary">1</span>
               </div>
-              <h3 className="font-heading text-xl font-semibold mb-4">Cole a Receita</h3>
-              <p className="text-muted-foreground">
-                Cole o link ou texto da receita que você quer preparar. 
-                Nossa IA analisa todos os ingredientes automaticamente.
+              <h3 className="font-heading text-2xl font-bold mb-4">Escolha a Receita</h3>
+              <p className="text-lg text-muted-foreground px-4">
+                Cole o link ou digite o nome do prato. Deixe a inspiração guiar você.
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-foreground">2</span>
+            <div className="text-center relative z-10 mt-12 md:mt-0">
+              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border-4 border-secondary">
+                <span className="text-4xl font-extrabold text-secondary">2</span>
               </div>
-              <h3 className="font-heading text-xl font-semibold mb-4">IA Organiza</h3>
-              <p className="text-muted-foreground">
-                Nossa inteligência artificial organiza os ingredientes por categoria 
-                e calcula as quantidades necessárias.
+              <h3 className="font-heading text-2xl font-bold mb-4">A Mágica Acontece</h3>
+              <p className="text-lg text-muted-foreground px-4">
+                Nossa IA separa, quantifica e categoriza tudo em segundos.
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-foreground">3</span>
+            <div className="text-center relative z-10 mt-12 md:mt-0">
+              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border-4 border-accent">
+                <span className="text-4xl font-extrabold text-accent">3</span>
               </div>
-              <h3 className="font-heading text-xl font-semibold mb-4">Compre e Cozinhe</h3>
-              <p className="text-muted-foreground">
-                Use sua lista organizada no supermercado e aproveite 
-                o tempo economizado para cozinhar deliciosamente.
+              <h3 className="font-heading text-2xl font-bold mb-4">Supermercado Zen</h3>
+              <p className="text-lg text-muted-foreground px-4">
+                Navegue pelos corredores com uma lista perfeita, focando apenas no essencial.
               </p>
             </div>
           </div>
@@ -329,7 +277,7 @@ export default function HomePage() {
                   </li>
                 </ul>
                 <Button className="w-full" asChild>
-                  <Link href="/auth/register">Começar</Link>
+                  <Link href="/dashboard">Começar</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -366,7 +314,7 @@ export default function HomePage() {
                   </li>
                 </ul>
                 <Button className="w-full" asChild>
-                  <Link href="/auth/register">Começar</Link>
+                  <Link href="/dashboard">Começar</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -400,7 +348,7 @@ export default function HomePage() {
                   </li>
                 </ul>
                 <Button className="w-full" asChild>
-                  <Link href="/auth/register">Começar</Link>
+                  <Link href="/dashboard">Começar</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -526,7 +474,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
-              <Link href="/auth/register">
+              <Link href="/dashboard">
                 Começar Grátis Agora
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>

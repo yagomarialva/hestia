@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..schemas.ai import (
@@ -16,13 +15,12 @@ from ..services.shopping_service import shopping_service
 from ..models.user import User
 
 router = APIRouter(prefix="/ai", tags=["🤖 Inteligência Artificial"])
-security = HTTPBearer()
 
 
 @router.post("/classify-product", response_model=ProductClassificationResponse)
 async def classify_product(
     request: ProductClassificationRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -70,14 +68,6 @@ async def classify_product(
     - A IA retornará o setor correto
     - Use essa informação ao adicionar itens às listas
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     sector = await ollama_service.classify_product(request.product_name)
     if not sector:
         raise HTTPException(
@@ -94,7 +84,7 @@ async def classify_product(
 @router.post("/generate-list", response_model=ListGenerationResponse)
 async def generate_shopping_list(
     request: ListGenerationRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -150,14 +140,6 @@ async def generate_shopping_list(
     - Quantidades calculadas baseadas no número de pessoas
     - Produtos relevantes para o tema escolhido
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     items = await ollama_service.generate_shopping_list(request.theme, request.people_count)
     if not items:
         raise HTTPException(
@@ -208,7 +190,7 @@ async def generate_shopping_list(
 @router.post("/save-ai-list", response_model=dict)
 async def save_ai_generated_list(
     request: dict,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -240,14 +222,6 @@ async def save_ai_generated_list(
     - `401`: Token inválido ou expirado
     - `500`: Erro ao salvar a lista
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     try:
         # Create the shopping list
         shopping_list_data = ShoppingListCreate(
@@ -287,7 +261,7 @@ async def save_ai_generated_list(
 @router.post("/recipe-ingredients", response_model=RecipeIngredientsResponse)
 async def generate_recipe_ingredients(
     request: RecipeIngredientsRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -349,14 +323,6 @@ async def generate_recipe_ingredients(
     - Dificuldade da receita considerada
     - Ingredientes organizados por setores do supermercado
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     ingredients = await ollama_service.generate_recipe_ingredients(
         request.recipe_name, 
         request.people_count, 
@@ -414,18 +380,10 @@ async def generate_recipe_ingredients(
 @router.post("/suggestions", response_model=SuggestionResponse)
 async def get_item_suggestions(
     request: SuggestionRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get item suggestions based on user's shopping history"""
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     # Verify user is requesting their own suggestions
     if request.user_id != user.id:
         raise HTTPException(
@@ -439,3 +397,86 @@ async def get_item_suggestions(
         suggested_items=suggested_items,
         based_on_history=True
     ) 
+from pydantic import BaseModel
+class ExtractUrlRequest(BaseModel):
+    url: str
+
+from ddgs import DDGS
+from recipe_scrapers import scrape_me
+
+@router.get("/recipes/search")
+async def search_recipes(q: str):
+    """
+    Search for recipes using DuckDuckGo
+    """
+    try:
+        results = []
+        with DDGS() as ddgs:
+            ddg_query = f"site:tudogostoso.com.br/receita OR site:panelinha.com.br/receita {q}"
+            for r in ddgs.text(ddg_query, region='wt-wt', max_results=5):
+                results.append({
+                    "title": r.get('title', ''),
+                    "snippet": r.get('body', ''),
+                    "url": r.get('href', '')
+                })
+        return {"results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/recipes/extract-url")
+async def extract_recipe_from_url(
+    request: ExtractUrlRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Extract recipe from URL and return parsed data (does not save automatically)
+    """
+    try:
+        scraper = scrape_me(request.url)
+        title = scraper.title()
+        ingredients_raw = scraper.ingredients()
+        image_url = scraper.image()
+        cooking_time = scraper.total_time()
+        if cooking_time:
+            cooking_time = f"{cooking_time} min"
+        else:
+            cooking_time = "Desconhecido"
+            
+        instructions = ""
+        try:
+            instructions = scraper.instructions()
+        except:
+            pass
+            
+        parsed_ingredients = []
+        for ing in ingredients_raw:
+            qty = 1.0
+            unit = "un"
+            name = ing
+            parts = ing.split(' ', 1)
+            if parts[0].replace('.','',1).isdigit():
+                try:
+                    qty = float(parts[0])
+                    name = parts[1] if len(parts) > 1 else ing
+                except:
+                    pass
+            
+            parsed_ingredients.append({
+                "name": name.strip()[:100],
+                "quantity": qty,
+                "unit": unit,
+                "sector": "mercearia"
+            })
+
+        return {
+            "title": title,
+            "image_url": image_url,
+            "cooking_time": cooking_time,
+            "ingredients": parsed_ingredients,
+            "instructions": instructions,
+            "source_url": request.url
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to extract recipe: {str(e)}")
+

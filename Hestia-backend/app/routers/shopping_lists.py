@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db
@@ -10,13 +9,12 @@ from ..services.shopping_service import shopping_service
 from ..models.user import User
 
 router = APIRouter(prefix="/shopping-lists", tags=["🛒 Listas de Compras"])
-security = HTTPBearer()
 
 
 @router.post("/", response_model=ShoppingListResponse)
 async def create_shopping_list(
     shopping_list_data: ShoppingListCreate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -47,14 +45,6 @@ async def create_shopping_list(
     - Use o ID retornado para adicionar itens à lista
     - Acesse `/api/v1/shopping-lists/{id}/items` para adicionar produtos
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     return await shopping_service.create_shopping_list(db, user.id, shopping_list_data)
 
 
@@ -62,7 +52,7 @@ async def create_shopping_list(
 async def get_shopping_lists(
     skip: int = 0,
     limit: int = 100,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -100,32 +90,16 @@ async def get_shopping_lists(
     ]
     ```
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     return shopping_service.get_user_shopping_lists(db, user.id, skip, limit)
 
 
 @router.get("/{shopping_list_id}", response_model=ShoppingListResponse)
 async def get_shopping_list(
     shopping_list_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get a specific shopping list by ID"""
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     shopping_list = shopping_service.get_shopping_list(db, shopping_list_id, user.id)
     if not shopping_list:
         raise HTTPException(
@@ -140,18 +114,10 @@ async def get_shopping_list(
 async def update_shopping_list(
     shopping_list_id: int,
     shopping_list_data: ShoppingListUpdate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update a shopping list"""
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     updated_list = shopping_service.update_shopping_list(db, shopping_list_id, user.id, shopping_list_data)
     if not updated_list:
         raise HTTPException(
@@ -165,18 +131,10 @@ async def update_shopping_list(
 @router.delete("/{shopping_list_id}")
 async def delete_shopping_list(
     shopping_list_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete a shopping list"""
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     success = shopping_service.delete_shopping_list(db, shopping_list_id, user.id)
     if not success:
         raise HTTPException(
@@ -191,7 +149,7 @@ async def delete_shopping_list(
 async def add_item_to_list(
     shopping_list_id: int,
     item_data: ItemCreate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -239,14 +197,6 @@ async def add_item_to_list(
     - Se o setor não for informado, a IA classificará automaticamente
     - O item será organizado por setor para facilitar as compras
     """
-    user = get_current_user(db, credentials.credentials)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
     item = await shopping_service.add_item_to_list(db, shopping_list_id, user.id, item_data)
     if not item:
         raise HTTPException(

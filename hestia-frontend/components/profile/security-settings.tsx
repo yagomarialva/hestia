@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Eye, EyeOff, Shield, Smartphone, Monitor, MapPin } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 // Mock security data
 const mockSessions = [
@@ -46,11 +47,16 @@ export function SecuritySettings() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
     if (newPassword !== confirmPassword) {
-      alert("New passwords don't match")
+      toast({
+        title: "Erro de Validação",
+        description: "As novas senhas não coincidem.",
+        variant: "destructive",
+      })
       return
     }
 
@@ -61,7 +67,10 @@ export function SecuritySettings() {
       setNewPassword("")
       setConfirmPassword("")
       setIsLoading(false)
-      alert("Password updated successfully")
+      toast({
+        title: "Sucesso!",
+        description: "Sua senha foi atualizada com sucesso.",
+      })
     }, 1000)
   }
 

@@ -12,11 +12,18 @@ export const API_CONFIG = {
     },
     USERS: '/users',
     SHOPPING_LISTS: '/shopping-lists',
-    ITEMS: '/items'
+    ITEMS: '/items',
+    AI: {
+      GENERATE_LIST: '/ai/generate-list',
+      EXTRACT_RECIPE: '/ai/extract-recipe',
+      GET_SUGGESTIONS: '/ai/suggestions',
+      EXTRACT_URL: '/ai/recipes/extract-url',
+      SEARCH_RECIPES: '/ai/recipes/search'
+    }
   }
 }
 
 // Função para construir URLs completas
 export const buildApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`
-} 
+}

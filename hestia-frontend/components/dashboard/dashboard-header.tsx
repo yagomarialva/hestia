@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSelector } from "@/components/ui/language-selector"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useI18n } from "@/lib/i18n/context"
 
 export function DashboardHeader() {
@@ -23,6 +24,7 @@ export function DashboardHeader() {
           </div>
         </div>
         <div className="flex items-center space-x-4">
+          <ThemeToggle />
           <LanguageSelector />
 
           <Button variant="ghost" size="sm" className="relative">

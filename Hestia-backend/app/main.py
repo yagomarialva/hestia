@@ -4,15 +4,30 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from sqlalchemy.orm import Session
 from .database import engine, get_db, Base
-from .routers import auth_router, users_router, shopping_lists_router, items_router, ai_router
+from .routers import shopping_lists_router, items_router, ai_router, recipes, pantry_router
 from .config import settings
+
+from contextlib import asynccontextmanager
+from .services.telegram_bot import init_telegram_bot, stop_telegram_bot
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    try:
+        await init_telegram_bot()
+    except Exception as e:
+        print(f"Error starting Telegram Bot: {e}")
+    yield
+    # Shutdown
+    await stop_telegram_bot()
+
 # Create FastAPI app
 app = FastAPI(
     title="Hestia API",
+    lifespan=lifespan,
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -56,11 +71,11 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(users_router, prefix="/api/v1")
 app.include_router(shopping_lists_router, prefix="/api/v1")
 app.include_router(items_router, prefix="/api/v1")
 app.include_router(ai_router, prefix="/api/v1")
+app.include_router(recipes.router, prefix="/api/v1")
+app.include_router(pantry_router, prefix="/api/v1")
 
 
 # Custom Swagger UI endpoint
@@ -117,8 +132,6 @@ async def api_info():
         "name": "Hestia API",
         "version": "1.0.0",
         "endpoints": {
-            "auth": "/api/v1/auth",
-            "users": "/api/v1/users",
             "shopping_lists": "/api/v1/shopping-lists",
             "items": "/api/v1/items",
             "ai": "/api/v1/ai"
