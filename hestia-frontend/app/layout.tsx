@@ -3,6 +3,7 @@ import { Work_Sans, Open_Sans } from "next/font/google"
 import "./globals.css"
 import { I18nProvider } from "@/lib/i18n/context"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
 
 const workSans = Work_Sans({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
+              <Toaster />
             </ThemeProvider>
         </I18nProvider>
       </body>

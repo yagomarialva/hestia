@@ -21,16 +21,17 @@ def get_current_user(db: Session = Depends(get_db)):
     return user
 
 router = APIRouter(
+    prefix="/pantry",
     tags=["pantry"]
 )
 
-@router.get("/", response_model=List[PantryItemResponse])
-def get_pantry_items(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("", response_model=List[PantryItemResponse])
+async def get_pantry_items(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     items = db.query(PantryItem).filter(PantryItem.user_id == current_user.id).all()
     return items
 
-@router.post("/", response_model=PantryItemResponse, status_code=status.HTTP_201_CREATED)
-def create_pantry_item(item: PantryItemCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.post("", response_model=PantryItemResponse, status_code=status.HTTP_201_CREATED)
+async def create_pantry_item(item: PantryItemCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_item = PantryItem(**item.model_dump(), user_id=current_user.id)
     db.add(db_item)
     db.commit()

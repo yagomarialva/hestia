@@ -185,7 +185,7 @@ export function PantryManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          sector: formData.sector || null
+          sector: formData.sector === "none" ? null : (formData.sector || null)
         })
       })
       

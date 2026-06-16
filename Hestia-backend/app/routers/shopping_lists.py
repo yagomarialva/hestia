@@ -11,7 +11,7 @@ from ..models.user import User
 router = APIRouter(prefix="/shopping-lists", tags=["🛒 Listas de Compras"])
 
 
-@router.post("/", response_model=ShoppingListResponse)
+@router.post("", response_model=ShoppingListResponse, status_code=status.HTTP_201_CREATED)
 async def create_shopping_list(
     shopping_list_data: ShoppingListCreate,
     user: User = Depends(get_current_user),
@@ -48,7 +48,7 @@ async def create_shopping_list(
     return await shopping_service.create_shopping_list(db, user.id, shopping_list_data)
 
 
-@router.get("/", response_model=List[ShoppingListResponse])
+@router.get("", response_model=List[ShoppingListResponse])
 async def get_shopping_lists(
     skip: int = 0,
     limit: int = 100,

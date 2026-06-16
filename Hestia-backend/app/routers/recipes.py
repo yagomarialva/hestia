@@ -9,7 +9,7 @@ from ..services.recipe_service import recipe_service
 
 router = APIRouter(prefix="/recipes", tags=["🍽️ Receitas"])
 
-@router.post("/", response_model=RecipeResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=RecipeResponse, status_code=status.HTTP_201_CREATED)
 async def create_recipe(
     recipe_data: RecipeCreate,
     user: User = Depends(get_current_user),
@@ -18,7 +18,7 @@ async def create_recipe(
     """Create a new saved recipe"""
     return recipe_service.create_recipe(db, user.id, recipe_data)
 
-@router.get("/", response_model=List[RecipeResponse])
+@router.get("", response_model=List[RecipeResponse])
 async def get_recipes(
     skip: int = 0,
     limit: int = 100,

@@ -1,4 +1,5 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { PantryManager } from "@/components/pantry/pantry-manager"
 
 export const metadata = {
@@ -8,19 +9,22 @@ export const metadata = {
 
 export default function PantryPage() {
   return (
-    <div className="flex flex-col h-full bg-background">
-      <DashboardHeader />
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-heading font-bold text-foreground">Controle de Despensa</h1>
-            <p className="text-muted-foreground mt-2">
-              Gerencie a quantidade ideal de produtos na sua casa e gere listas de reposição automaticamente.
-            </p>
+    <div className="min-h-screen bg-background">
+      <DashboardSidebar />
+      <div className="lg:pl-64">
+        <DashboardHeader />
+        <main className="p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-heading font-bold text-foreground">Controle de Despensa</h1>
+              <p className="text-muted-foreground mt-2">
+                Gerencie a quantidade ideal de produtos na sua casa e gere listas de reposição automaticamente.
+              </p>
+            </div>
+            <PantryManager />
           </div>
-          <PantryManager />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
