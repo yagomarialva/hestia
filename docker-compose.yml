@@ -7,7 +7,7 @@ services:
       context: ./Hestia-backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8002:8000"
     environment:
       - DATABASE_URL=postgresql://hestia_user:hestia_password@db:5432/hestia_db
       - SECRET_KEY=your-secret-key-here-change-in-production
@@ -69,8 +69,8 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "8085:80"
+      - "8443:443"
 #    volumes:
 #      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
 #      - ./nginx/ssl:/etc/nginx/ssl:ro
